@@ -1,0 +1,42 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from './context/ThemeContext';
+import Layout from './components/Layout';
+import Dashboard from './pages/Dashboard';
+import AssetList from './pages/AssetList';
+import AssetForm from './pages/AssetForm';
+import AssetDetail from './pages/AssetDetail';
+import LocationList from './pages/LocationList';
+import LocationForm from './pages/LocationForm';
+import LocationDetail from './pages/LocationDetail';
+import UserList from './pages/UserList';
+import UserForm from './pages/UserForm';
+import UserDetail from './pages/UserDetail';
+
+function App() {
+  return (
+    <ThemeProvider>
+      <Router>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/assets" element={<AssetList />} />
+            <Route path="/assets/create" element={<AssetForm />} />
+            <Route path="/assets/edit/:id" element={<AssetForm />} />
+            <Route path="/assets/detail/:id" element={<AssetDetail />} />
+            <Route path="/locations" element={<LocationList />} />
+            <Route path="/locations/create" element={<LocationForm />} />
+            <Route path="/locations/edit/:id" element={<LocationForm />} />
+            <Route path="/locations/detail/:id" element={<LocationDetail />} />
+            <Route path="/users" element={<UserList />} />
+            <Route path="/users/create" element={<UserForm />} />
+            <Route path="/users/edit/:id" element={<UserForm />} />
+            <Route path="/users/detail/:id" element={<UserDetail />} />
+          </Routes>
+        </Layout>
+      </Router>
+    </ThemeProvider>
+  );
+}
+
+export default App;
