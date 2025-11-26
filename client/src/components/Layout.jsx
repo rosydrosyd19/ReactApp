@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, Moon, Sun, Menu, X, MapPin, Users } from 'lucide-react';
+import { LayoutDashboard, Package, Moon, Sun, Menu, X, MapPin, Users, FileText } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 const Layout = ({ children }) => {
@@ -13,12 +13,14 @@ const Layout = ({ children }) => {
     const mobileNavItems = [
         { path: '/', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/assets', label: 'Assets', icon: Package },
+        { path: '/licenses', label: 'Licenses', icon: FileText },
     ];
 
     // Desktop sidebar items
     const desktopNavItems = [
         { path: '/', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/assets', label: 'Assets', icon: Package },
+        { path: '/licenses', label: 'Licenses', icon: FileText },
         { path: '/locations', label: 'Locations', icon: MapPin },
         { path: '/users', label: 'Users', icon: Users },
     ];
@@ -51,8 +53,8 @@ const Layout = ({ children }) => {
                                 key={item.path}
                                 to={item.path}
                                 className={`flex items-center p-3 rounded-lg transition-colors ${isActive
-                                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                                     }`}
                             >
                                 <Icon size={20} />
@@ -112,8 +114,8 @@ const Layout = ({ children }) => {
                                 to={item.path}
                                 onClick={() => setIsMobileSidebarOpen(false)}
                                 className={`flex items-center p-3 rounded-lg transition-colors ${isActive
-                                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                                     }`}
                             >
                                 <Icon size={20} />
@@ -168,8 +170,8 @@ const Layout = ({ children }) => {
                                 key={item.path}
                                 to={item.path}
                                 className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${isActive
-                                        ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
-                                        : 'text-gray-600 dark:text-gray-400'
+                                    ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                                    : 'text-gray-600 dark:text-gray-400'
                                     }`}
                             >
                                 <Icon size={24} />

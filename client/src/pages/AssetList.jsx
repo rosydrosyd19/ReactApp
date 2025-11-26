@@ -127,13 +127,12 @@ const AssetList = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Assets</h2>
                 <Link
                     to="/assets/create"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors w-full sm:w-auto justify-center"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
                 >
-                    <Plus size={20} className="mr-2" />
                     Add New Asset
                 </Link>
             </div>
@@ -188,10 +187,10 @@ const AssetList = () => {
                                     <td className="p-4">
                                         <span
                                             className={`px-3 py-1 rounded-full text-xs font-medium ${asset.status === 'Ready to Deploy'
-                                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                    : asset.status === 'Deployed'
-                                                        ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                                                        : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
+                                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                                : asset.status === 'Deployed'
+                                                    ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                                                    : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
                                                 }`}
                                         >
                                             {asset.status}
@@ -283,10 +282,10 @@ const AssetList = () => {
                                 )}
                                 <span
                                     className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${asset.status === 'Ready to Deploy'
-                                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                            : asset.status === 'Deployed'
-                                                ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                                                : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
+                                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                        : asset.status === 'Deployed'
+                                            ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                                            : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
                                         }`}
                                 >
                                     {asset.status}
@@ -355,8 +354,8 @@ const AssetList = () => {
                                     setCheckoutForm({ ...checkoutForm, checked_out_to: '' });
                                 }}
                                 className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${checkoutType === 'user'
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                                     }`}
                             >
                                 User
@@ -367,8 +366,8 @@ const AssetList = () => {
                                     setCheckoutForm({ ...checkoutForm, checked_out_to: '' });
                                 }}
                                 className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${checkoutType === 'location'
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                                     }`}
                             >
                                 Location
@@ -379,8 +378,8 @@ const AssetList = () => {
                                     setCheckoutForm({ ...checkoutForm, checked_out_to: '' });
                                 }}
                                 className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${checkoutType === 'asset'
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                                     }`}
                             >
                                 Asset

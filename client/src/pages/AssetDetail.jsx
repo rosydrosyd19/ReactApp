@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Package, Calendar, Tag, Hash, FileText, Clock, User as UserIcon } from 'lucide-react';
+import { ArrowLeft, Package, Calendar, Tag, Hash, FileText, Clock, User as UserIcon, Key } from 'lucide-react';
 
 const AssetDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [asset, setAsset] = useState(null);
     const [history, setHistory] = useState([]);
+    const [licenses, setLicenses] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchAsset();
         fetchHistory();
+        fetchLicenses();
     }, [id]);
 
     const fetchAsset = async () => {
@@ -32,6 +34,15 @@ const AssetDetail = () => {
             setHistory(res.data);
         } catch (error) {
             console.error('Error fetching history:', error);
+        }
+    };
+
+    const fetchLicenses = async () => {
+        try {
+            const res = await axios.get(`http://localhost:5000/api/assets/${id}/licenses`);
+            setLicenses(res.data);
+        } catch (error) {
+            console.error('Error fetching licenses:', error);
         }
     };
 
@@ -97,10 +108,10 @@ const AssetDetail = () => {
                                     <div>
                                         <span
                                             className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${asset.status === 'Ready to Deploy'
-                                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                    : asset.status === 'Deployed'
-                                                        ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                                                        : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
+                                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                                : asset.status === 'Deployed'
+                                                    ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                                                    : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
                                                 }`}
                                         >
                                             {asset.status}
@@ -150,6 +161,46 @@ const AssetDetail = () => {
                             )}
                         </div>
                     )}
+
+                    {/* Assigned Licenses */}
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Assigned Licenses</h4>
+                        {licenses.length > 0 ? (
+                            <div className="space-y-3">
+                                {licenses.map((license, index) => (
+                                    <div key={index} className="border-l-4 border-purple-500 pl-4 py-2 bg-gray-50 dark:bg-gray-700/50 rounded">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                                <div className="flex items-center mb-1">
+                                                    <Key size={16} className="mr-2 text-purple-600 dark:text-purple-400" />
+                                                    <p className="font-medium text-gray-800 dark:text-white">{license.software_name}</p>
+                                                </div>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400 font-mono">
+                                                    Key: {license.product_key}
+                                                </p>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                    Assigned: {new Date(license.assigned_at).toLocaleString()}
+                                                </p>
+                                                {license.expiration_date && (
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                        Expires: {new Date(license.expiration_date).toLocaleDateString()}
+                                                    </p>
+                                                )}
+                                                {license.notes && (
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 italic">{license.notes}</p>
+                                                )}
+                                            </div>
+                                            <span className="text-xs px-2 py-1 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                                                Active
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-gray-500 dark:text-gray-400 text-sm">No licenses assigned to this asset.</p>
+                        )}
+                    </div>
 
                     {/* Checkout History */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">

@@ -50,4 +50,47 @@ router.delete('/:id', (req, res) => {
     });
 });
 
+// Check-out location
+router.post('/:id/checkout', (req, res) => {
+    const { checked_out_to, checked_out_type, notes, expected_checkin_date } = req.body;
+    const locationId = req.params.id;
+
+    // Update location
+    const updateLocationSql = 'UPDATE locations SET status = ?, checked_out_to = ?, checked_out_type = ?, checked_out_at = NOW(), notes = ?, expected_checkin_date = ? WHERE id = ?';
+    db.query(updateLocationSql, ['Occupied', checked_out_to, checked_out_type, notes, expected_checkin_date || null, locationId], (err) => {
+        if (err) return res.status(500).json(err);
+
+        // Add to history
+        const historySql = 'INSERT INTO location_checkout_history (location_id, checked_out_to, checked_out_type, notes) VALUES (?, ?, ?, ?)';
+        db.query(historySql, [locationId, checked_out_to, checked_out_type, notes], (err) => {
+            if (err) return res.status(500).json(err);
+            res.json({ message: 'Location checked out successfully' });
+        });
+    });
+});
+
+// Check-in location
+router.post('/:id/checkin', (req, res) => {
+    const locationId = req.params.id;
+
+    // Get current checkout info
+    const getLocationSql = 'SELECT checked_out_at FROM locations WHERE id = ?';
+    db.query(getLocationSql, [locationId], (err, result) => {
+        if (err) return res.status(500).json(err);
+
+        // Update location
+        const updateLocationSql = 'UPDATE locations SET status = ?, checked_out_to = NULL, checked_out_type = NULL, checked_out_at = NULL, notes = NULL, expected_checkin_date = NULL WHERE id = ?';
+        db.query(updateLocationSql, ['Available', locationId], (err) => {
+            if (err) return res.status(500).json(err);
+
+            // Update history
+            const updateHistorySql = 'UPDATE location_checkout_history SET checked_in_at = NOW() WHERE location_id = ? AND checked_in_at IS NULL';
+            db.query(updateHistorySql, [locationId], (err) => {
+                if (err) return res.status(500).json(err);
+                res.json({ message: 'Location checked in successfully' });
+            });
+        });
+    });
+});
+
 module.exports = router;

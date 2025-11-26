@@ -21,6 +21,8 @@ const usersRouter = require('./routes/users');
 app.use('/api/assets', assetsRouter);
 app.use('/api/locations', locationsRouter);
 app.use('/api/users', usersRouter);
+const licensesRouter = require('./routes/licenses');
+app.use('/api/licenses', licensesRouter);
 
 app.get('/api/dashboard', (req, res) => {
     const queries = {

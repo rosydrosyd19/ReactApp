@@ -12,6 +12,9 @@ import LocationDetail from './pages/LocationDetail';
 import UserList from './pages/UserList';
 import UserForm from './pages/UserForm';
 import UserDetail from './pages/UserDetail';
+import Licenses from './pages/Licenses';
+import LicenseForm from './pages/LicenseForm';
+import LicenseDetail from './pages/LicenseDetail';
 
 function App() {
   return (
@@ -32,6 +35,10 @@ function App() {
             <Route path="/users/create" element={<UserForm />} />
             <Route path="/users/edit/:id" element={<UserForm />} />
             <Route path="/users/detail/:id" element={<UserDetail />} />
+            <Route path="/licenses" element={<Licenses />} />
+            <Route path="/licenses/create" element={<LicenseForm />} />
+            <Route path="/licenses/edit/:id" element={<LicenseForm />} />
+            <Route path="/licenses/detail/:id" element={<LicenseDetail />} />
           </Routes>
         </Layout>
       </Router>

@@ -146,3 +146,6 @@ Jika port 5000 atau 5173 sudah digunakan, Anda bisa:
 
 MIT License
 # ReactApp
+
+
+samakan style search pada halaman Licenses, Assets, Locations dan Users

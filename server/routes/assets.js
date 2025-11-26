@@ -116,4 +116,32 @@ router.get('/:id/history', (req, res) => {
     });
 });
 
+// Get licenses assigned to an asset
+router.get('/:id/licenses', (req, res) => {
+    const assetId = req.params.id;
+
+    // First get the asset name
+    const getAssetSql = 'SELECT name FROM assets WHERE id = ?';
+    db.query(getAssetSql, [assetId], (err, assetResult) => {
+        if (err) return res.status(500).json(err);
+        if (assetResult.length === 0) return res.status(404).json({ message: 'Asset not found' });
+
+        const assetName = assetResult[0].name;
+
+        // Get all license assignments for this asset
+        const sql = `
+            SELECT la.*, l.software_name, l.product_key, l.expiration_date
+            FROM license_assignments la
+            JOIN licenses l ON la.license_id = l.id
+            WHERE la.assigned_to = ? AND la.assigned_type = 'asset' AND la.returned_at IS NULL
+            ORDER BY la.assigned_at DESC
+        `;
+
+        db.query(sql, [assetName], (err, results) => {
+            if (err) return res.status(500).json(err);
+            res.json(results);
+        });
+    });
+});
+
 module.exports = router;
