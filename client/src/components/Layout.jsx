@@ -14,6 +14,7 @@ const Layout = ({ children }) => {
         { path: '/', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/assets', label: 'Assets', icon: Package },
         { path: '/licenses', label: 'Licenses', icon: FileText },
+        { path: '/accessories', label: 'Accessories', icon: Package },
     ];
 
     // Desktop sidebar items
@@ -21,6 +22,7 @@ const Layout = ({ children }) => {
         { path: '/', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/assets', label: 'Assets', icon: Package },
         { path: '/licenses', label: 'Licenses', icon: FileText },
+        { path: '/accessories', label: 'Accessories', icon: Package },
         { path: '/locations', label: 'Locations', icon: MapPin },
         { path: '/users', label: 'Users', icon: Users },
     ];

@@ -15,6 +15,9 @@ import UserDetail from './pages/UserDetail';
 import Licenses from './pages/Licenses';
 import LicenseForm from './pages/LicenseForm';
 import LicenseDetail from './pages/LicenseDetail';
+import AccessoryList from './pages/AccessoryList';
+import AccessoryForm from './pages/AccessoryForm';
+import AccessoryDetail from './pages/AccessoryDetail';
 
 function App() {
   return (
@@ -39,6 +42,10 @@ function App() {
             <Route path="/licenses/create" element={<LicenseForm />} />
             <Route path="/licenses/edit/:id" element={<LicenseForm />} />
             <Route path="/licenses/detail/:id" element={<LicenseDetail />} />
+            <Route path="/accessories" element={<AccessoryList />} />
+            <Route path="/accessories/create" element={<AccessoryForm />} />
+            <Route path="/accessories/edit/:id" element={<AccessoryForm />} />
+            <Route path="/accessories/detail/:id" element={<AccessoryDetail />} />
           </Routes>
         </Layout>
       </Router>

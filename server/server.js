@@ -18,11 +18,14 @@ app.use('/uploads', express.static('uploads'));
 const assetsRouter = require('./routes/assets');
 const locationsRouter = require('./routes/locations');
 const usersRouter = require('./routes/users');
+const licensesRouter = require('./routes/licenses');
+const accessoriesRouter = require('./routes/accessories');
+
 app.use('/api/assets', assetsRouter);
 app.use('/api/locations', locationsRouter);
 app.use('/api/users', usersRouter);
-const licensesRouter = require('./routes/licenses');
 app.use('/api/licenses', licensesRouter);
+app.use('/api/accessories', accessoriesRouter);
 
 app.get('/api/dashboard', (req, res) => {
     const queries = {
@@ -54,4 +57,3 @@ app.get('/api/dashboard', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
-
