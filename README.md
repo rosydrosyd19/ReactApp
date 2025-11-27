@@ -147,4 +147,3 @@ Jika port 5000 atau 5173 sudah digunakan, Anda bisa:
 MIT License
 # ReactApp
 
-buatkan menu untuk menyimpan akun email, dropbox, ig dan sosial media lainnya menu di side bar ada di bawah menu Components. pada menu harus ada CRUD dan fitur cekin/cekout ke asset saja juga Licenses. pada Asset Details tambahkan detail akun apa saja yang telah di cekout ke asset tersebut. pada License Details juga tambahkan detail akun apa saja yang telah di cekout ke license tersebut.

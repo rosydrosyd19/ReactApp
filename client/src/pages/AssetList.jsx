@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Edit, Trash2, Plus, Search, Package, LogIn, LogOut, Eye } from 'lucide-react';
+import { Edit, Trash2, Plus, Search, Package, LogIn, LogOut, Eye, QrCode, X } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
 
 const AssetList = () => {
     const [assets, setAssets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+    const [showQrModal, setShowQrModal] = useState(false);
     const [selectedAsset, setSelectedAsset] = useState(null);
+    const [qrAsset, setQrAsset] = useState(null);
     const [checkoutForm, setCheckoutForm] = useState({
         checked_out_to: '',
         notes: '',
@@ -106,6 +109,11 @@ const AssetList = () => {
                 console.error('Error checking in asset:', error);
             }
         }
+    };
+
+    const handleShowQr = (asset) => {
+        setQrAsset(asset);
+        setShowQrModal(true);
     };
 
     const filteredAssets = assets.filter((asset) =>
@@ -218,6 +226,13 @@ const AssetList = () => {
                                                     <LogIn size={18} />
                                                 </button>
                                             )}
+                                            <button
+                                                onClick={() => handleShowQr(asset)}
+                                                className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                                title="Show QR Code"
+                                            >
+                                                <QrCode size={18} />
+                                            </button>
                                             <Link
                                                 to={`/assets/detail/${asset.id}`}
                                                 className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -310,6 +325,12 @@ const AssetList = () => {
                                         <LogIn size={18} />
                                     </button>
                                 )}
+                                <button
+                                    onClick={() => handleShowQr(asset)}
+                                    className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                >
+                                    <QrCode size={18} />
+                                </button>
                                 <Link
                                     to={`/assets/detail/${asset.id}`}
                                     className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -459,6 +480,58 @@ const AssetList = () => {
                             >
                                 Check Out
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* QR Code Modal */}
+            {showQrModal && qrAsset && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-sm w-full p-6 relative">
+                        <button
+                            onClick={() => setShowQrModal(false)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                        >
+                            <X size={24} />
+                        </button>
+                        <div className="text-center">
+                            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Asset QR Code</h3>
+                            <p className="text-gray-500 dark:text-gray-400 mb-6">{qrAsset.name}</p>
+
+                            <div className="bg-white p-4 rounded-xl inline-block mb-4 shadow-sm border border-gray-100">
+                                <QRCodeCanvas
+                                    value={`http://localhost:3000/assets/detail/${qrAsset.id}`}
+                                    size={200}
+                                    level={"H"}
+                                />
+                            </div>
+
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 font-mono">
+                                {qrAsset.serial_number}
+                            </p>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowQrModal(false)}
+                                    className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                >
+                                    Close
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const canvas = document.querySelector('canvas');
+                                        const url = canvas.toDataURL('image/png');
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `qr-${qrAsset.name.replace(/\s+/g, '-').toLowerCase()}.png`;
+                                        a.click();
+                                    }}
+                                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    Download
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Package, FileText, LogIn } from 'lucide-react';
+import { ArrowLeft, Edit, Package, FileText, LogIn, QrCode } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
 
 const ComponentDetail = () => {
     const { id } = useParams();
@@ -174,6 +175,37 @@ const ComponentDetail = () => {
 
                 {/* Sidebar Info (Stats) */}
                 <div className="space-y-6">
+                    {/* QR Code Card */}
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 text-center">
+                        <h3 className="font-semibold text-gray-800 dark:text-white mb-4 flex items-center justify-center gap-2">
+                            <QrCode size={20} />
+                            Component QR Code
+                        </h3>
+                        <div className="bg-white p-4 rounded-xl inline-block mb-4 shadow-sm border border-gray-100">
+                            <QRCodeCanvas
+                                value={`http://localhost:3000/components/detail/${component.id}`}
+                                size={150}
+                                level={"H"}
+                            />
+                        </div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 font-mono">
+                            {component.model_number || 'No Model Number'}
+                        </p>
+                        <button
+                            onClick={() => {
+                                const canvas = document.querySelector('canvas');
+                                const url = canvas.toDataURL('image/png');
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = `qr-${component.name.replace(/\s+/g, '-').toLowerCase()}.png`;
+                                a.click();
+                            }}
+                            className="w-full px-4 py-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg transition-colors text-sm font-medium"
+                        >
+                            Download QR Code
+                        </button>
+                    </div>
+
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                         <h3 className="font-semibold text-gray-800 dark:text-white mb-4">Quick Stats</h3>
                         <div className="space-y-4">

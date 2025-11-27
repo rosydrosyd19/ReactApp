@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Edit, Trash2, Package, Eye, LogOut, Search } from 'lucide-react';
+import { Edit, Trash2, Package, Eye, LogOut, Search, QrCode, X } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
 
 const ComponentList = () => {
     const [components, setComponents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+    const [showQrModal, setShowQrModal] = useState(false);
     const [selectedComponent, setSelectedComponent] = useState(null);
+    const [qrItem, setQrItem] = useState(null);
     const [checkoutForm, setCheckoutForm] = useState({
         assigned_to: '',
         quantity: 1,
@@ -56,6 +59,11 @@ const ComponentList = () => {
         setSelectedComponent(component);
         setShowCheckoutModal(true);
         setCheckoutForm({ assigned_to: '', quantity: 1, notes: '' });
+    };
+
+    const handleShowQr = (item) => {
+        setQrItem(item);
+        setShowQrModal(true);
     };
 
     const submitCheckout = async () => {
@@ -175,6 +183,13 @@ const ComponentList = () => {
                                                         <LogOut size={18} />
                                                     </button>
                                                 )}
+                                                <button
+                                                    onClick={() => handleShowQr(comp)}
+                                                    className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                                    title="Show QR Code"
+                                                >
+                                                    <QrCode size={18} />
+                                                </button>
                                                 <Link
                                                     to={`/components/detail/${comp.id}`}
                                                     className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -253,6 +268,12 @@ const ComponentList = () => {
                                             <LogOut size={18} />
                                         </button>
                                     )}
+                                    <button
+                                        onClick={() => handleShowQr(comp)}
+                                        className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                    >
+                                        <QrCode size={18} />
+                                    </button>
                                     <Link
                                         to={`/components/detail/${comp.id}`}
                                         className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -349,6 +370,58 @@ const ComponentList = () => {
                             >
                                 Check Out
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* QR Code Modal */}
+            {showQrModal && qrItem && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-sm w-full p-6 relative">
+                        <button
+                            onClick={() => setShowQrModal(false)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                        >
+                            <X size={24} />
+                        </button>
+                        <div className="text-center">
+                            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Component QR Code</h3>
+                            <p className="text-gray-500 dark:text-gray-400 mb-6">{qrItem.name}</p>
+
+                            <div className="bg-white p-4 rounded-xl inline-block mb-4 shadow-sm border border-gray-100">
+                                <QRCodeCanvas
+                                    value={`http://localhost:3000/components/detail/${qrItem.id}`}
+                                    size={200}
+                                    level={"H"}
+                                />
+                            </div>
+
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 font-mono">
+                                {qrItem.model_number || 'No Model Number'}
+                            </p>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowQrModal(false)}
+                                    className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                >
+                                    Close
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const canvas = document.querySelector('canvas');
+                                        const url = canvas.toDataURL('image/png');
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `qr-${qrItem.name.replace(/\s+/g, '-').toLowerCase()}.png`;
+                                        a.click();
+                                    }}
+                                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    Download
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
