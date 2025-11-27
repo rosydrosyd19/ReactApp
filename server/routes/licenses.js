@@ -108,4 +108,23 @@ router.get('/:id/assignments', (req, res) => {
     });
 });
 
+// Get accounts assigned to a license
+router.get('/:id/accounts', (req, res) => {
+    const licenseId = req.params.id;
+
+    // Get all account assignments for this license
+    const sql = `
+        SELECT aa.*, a.account_type, a.account_name, a.username
+        FROM account_assignments aa
+        JOIN accounts a ON aa.account_id = a.id
+        WHERE aa.assigned_to = ? AND aa.assigned_type = 'license'
+        ORDER BY aa.assigned_at DESC
+    `;
+
+    db.query(sql, [licenseId], (err, results) => {
+        if (err) return res.status(500).json(err);
+        res.json(results);
+    });
+});
+
 module.exports = router;

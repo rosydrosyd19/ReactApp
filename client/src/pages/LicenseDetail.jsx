@@ -8,11 +8,13 @@ const LicenseDetail = () => {
     const navigate = useNavigate();
     const [license, setLicense] = useState(null);
     const [assignments, setAssignments] = useState([]);
+    const [accounts, setAccounts] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchLicenseDetails();
         fetchAssignments();
+        fetchAccounts();
     }, [id]);
 
     const fetchLicenseDetails = async () => {
@@ -44,6 +46,15 @@ const LicenseDetail = () => {
             } catch (error) {
                 console.error('Error checking in license:', error);
             }
+        }
+    };
+
+    const fetchAccounts = async () => {
+        try {
+            const res = await axios.get(`http://localhost:5000/api/licenses/${id}/accounts`);
+            setAccounts(res.data);
+        } catch (error) {
+            console.error('Error fetching accounts:', error);
         }
     };
 
@@ -165,6 +176,44 @@ const LicenseDetail = () => {
                                     <LogIn size={18} />
                                     <span className="hidden sm:inline">Check In</span>
                                 </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Assigned Accounts */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
+                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">Assigned Accounts</h3>
+                {accounts.length === 0 ? (
+                    <p className="text-gray-500 dark:text-gray-400 text-center py-4">No accounts assigned to this license</p>
+                ) : (
+                    <div className="space-y-3">
+                        {accounts.map((account, index) => (
+                            <div
+                                key={index}
+                                className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-orange-500"
+                            >
+                                <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                        <p className="font-medium text-gray-800 dark:text-white mb-1">{account.account_name}</p>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">
+                                            Type: {account.account_type}
+                                        </p>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 font-mono">
+                                            Username: {account.username}
+                                        </p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            Assigned: {new Date(account.assigned_at).toLocaleString()}
+                                        </p>
+                                        {account.notes && (
+                                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 italic">{account.notes}</p>
+                                        )}
+                                    </div>
+                                    <span className="text-xs px-2 py-1 rounded bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
+                                        Active
+                                    </span>
+                                </div>
                             </div>
                         ))}
                     </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Package, Calendar, Tag, Hash, FileText, Clock, User as UserIcon, Key } from 'lucide-react';
+import { ArrowLeft, Package, Calendar, Tag, Hash, FileText, Clock, User as UserIcon, Key, User } from 'lucide-react';
 
 const AssetDetail = () => {
     const { id } = useParams();
@@ -9,12 +9,18 @@ const AssetDetail = () => {
     const [asset, setAsset] = useState(null);
     const [history, setHistory] = useState([]);
     const [licenses, setLicenses] = useState([]);
+    const [accessories, setAccessories] = useState([]);
+    const [components, setComponents] = useState([]);
+    const [accounts, setAccounts] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchAsset();
         fetchHistory();
         fetchLicenses();
+        fetchAccessories();
+        fetchComponents();
+        fetchAccounts();
     }, [id]);
 
     const fetchAsset = async () => {
@@ -43,6 +49,33 @@ const AssetDetail = () => {
             setLicenses(res.data);
         } catch (error) {
             console.error('Error fetching licenses:', error);
+        }
+    };
+
+    const fetchAccessories = async () => {
+        try {
+            const res = await axios.get(`http://localhost:5000/api/assets/${id}/accessories`);
+            setAccessories(res.data);
+        } catch (error) {
+            console.error('Error fetching accessories:', error);
+        }
+    };
+
+    const fetchComponents = async () => {
+        try {
+            const res = await axios.get(`http://localhost:5000/api/assets/${id}/components`);
+            setComponents(res.data);
+        } catch (error) {
+            console.error('Error fetching components:', error);
+        }
+    };
+
+    const fetchAccounts = async () => {
+        try {
+            const res = await axios.get(`http://localhost:5000/api/assets/${id}/accounts`);
+            setAccounts(res.data);
+        } catch (error) {
+            console.error('Error fetching accounts:', error);
         }
     };
 
@@ -199,6 +232,134 @@ const AssetDetail = () => {
                             </div>
                         ) : (
                             <p className="text-gray-500 dark:text-gray-400 text-sm">No licenses assigned to this asset.</p>
+                        )}
+                    </div>
+
+                    {/* Assigned Accessories */}
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Assigned Accessories</h4>
+                        {accessories.length > 0 ? (
+                            <div className="space-y-3">
+                                {accessories.map((accessory, index) => (
+                                    <div key={index} className="border-l-4 border-blue-500 pl-4 py-2 bg-gray-50 dark:bg-gray-700/50 rounded">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                                <div className="flex items-center mb-1">
+                                                    <Package size={16} className="mr-2 text-blue-600 dark:text-blue-400" />
+                                                    <p className="font-medium text-gray-800 dark:text-white">{accessory.accessory_name}</p>
+                                                </div>
+                                                {accessory.category && (
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                        Category: {accessory.category}
+                                                    </p>
+                                                )}
+                                                {accessory.model_number && (
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400 font-mono">
+                                                        Model: {accessory.model_number}
+                                                    </p>
+                                                )}
+                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                    Quantity: {accessory.quantity}
+                                                </p>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                    Assigned: {new Date(accessory.assigned_at).toLocaleString()}
+                                                </p>
+                                                {accessory.notes && (
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 italic">{accessory.notes}</p>
+                                                )}
+                                            </div>
+                                            <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                                Active
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-gray-500 dark:text-gray-400 text-sm">No accessories assigned to this asset.</p>
+                        )}
+                    </div>
+
+                    {/* Assigned Components */}
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Assigned Components</h4>
+                        {components.length > 0 ? (
+                            <div className="space-y-3">
+                                {components.map((component, index) => (
+                                    <div key={index} className="border-l-4 border-green-500 pl-4 py-2 bg-gray-50 dark:bg-gray-700/50 rounded">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                                <div className="flex items-center mb-1">
+                                                    <Package size={16} className="mr-2 text-green-600 dark:text-green-400" />
+                                                    <p className="font-medium text-gray-800 dark:text-white">{component.component_name}</p>
+                                                </div>
+                                                {component.category && (
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                        Category: {component.category}
+                                                    </p>
+                                                )}
+                                                {component.model_number && (
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400 font-mono">
+                                                        Model: {component.model_number}
+                                                    </p>
+                                                )}
+                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                    Quantity: {component.quantity}
+                                                </p>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                    Assigned: {new Date(component.assigned_at).toLocaleString()}
+                                                </p>
+                                                {component.notes && (
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 italic">{component.notes}</p>
+                                                )}
+                                            </div>
+                                            <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                                Active
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-gray-500 dark:text-gray-400 text-sm">No components assigned to this asset.</p>
+                        )}
+                    </div>
+
+                    {/* Assigned Accounts */}
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Assigned Accounts</h4>
+                        {accounts.length > 0 ? (
+                            <div className="space-y-3">
+                                {accounts.map((account, index) => (
+                                    <div key={index} className="border-l-4 border-orange-500 pl-4 py-2 bg-gray-50 dark:bg-gray-700/50 rounded">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                                <div className="flex items-center mb-1">
+                                                    <User size={16} className="mr-2 text-orange-600 dark:text-orange-400" />
+                                                    <p className="font-medium text-gray-800 dark:text-white">{account.account_name}</p>
+                                                </div>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">
+                                                    Type: {account.account_type}
+                                                </p>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400 font-mono">
+                                                    Username: {account.username}
+                                                </p>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                    Assigned: {new Date(account.assigned_at).toLocaleString()}
+                                                </p>
+                                                {account.notes && (
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 italic">{account.notes}</p>
+                                                )}
+                                            </div>
+                                            <span className="text-xs px-2 py-1 rounded bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
+                                                Active
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-gray-500 dark:text-gray-400 text-sm">No accounts assigned to this asset.</p>
                         )}
                     </div>
 

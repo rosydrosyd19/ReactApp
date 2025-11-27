@@ -20,12 +20,16 @@ const locationsRouter = require('./routes/locations');
 const usersRouter = require('./routes/users');
 const licensesRouter = require('./routes/licenses');
 const accessoriesRouter = require('./routes/accessories');
+const componentsRouter = require('./routes/components');
+const accountsRouter = require('./routes/accounts');
 
 app.use('/api/assets', assetsRouter);
 app.use('/api/locations', locationsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/licenses', licensesRouter);
 app.use('/api/accessories', accessoriesRouter);
+app.use('/api/components', componentsRouter);
+app.use('/api/accounts', accountsRouter);
 
 app.get('/api/dashboard', (req, res) => {
     const queries = {

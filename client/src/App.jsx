@@ -18,6 +18,12 @@ import LicenseDetail from './pages/LicenseDetail';
 import AccessoryList from './pages/AccessoryList';
 import AccessoryForm from './pages/AccessoryForm';
 import AccessoryDetail from './pages/AccessoryDetail';
+import ComponentList from './pages/ComponentList';
+import ComponentForm from './pages/ComponentForm';
+import ComponentDetail from './pages/ComponentDetail';
+import AccountList from './pages/AccountList';
+import AccountForm from './pages/AccountForm';
+import AccountDetail from './pages/AccountDetail';
 
 function App() {
   return (
@@ -46,6 +52,14 @@ function App() {
             <Route path="/accessories/create" element={<AccessoryForm />} />
             <Route path="/accessories/edit/:id" element={<AccessoryForm />} />
             <Route path="/accessories/detail/:id" element={<AccessoryDetail />} />
+            <Route path="/components" element={<ComponentList />} />
+            <Route path="/components/create" element={<ComponentForm />} />
+            <Route path="/components/edit/:id" element={<ComponentForm />} />
+            <Route path="/components/detail/:id" element={<ComponentDetail />} />
+            <Route path="/accounts" element={<AccountList />} />
+            <Route path="/accounts/create" element={<AccountForm />} />
+            <Route path="/accounts/edit/:id" element={<AccountForm />} />
+            <Route path="/accounts/detail/:id" element={<AccountDetail />} />
           </Routes>
         </Layout>
       </Router>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, Moon, Sun, Menu, X, MapPin, Users, FileText } from 'lucide-react';
+import { LayoutDashboard, Package, Moon, Sun, Menu, X, MapPin, Users, FileText, Box, Puzzle, UserCircle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 const Layout = ({ children }) => {
@@ -14,7 +14,7 @@ const Layout = ({ children }) => {
         { path: '/', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/assets', label: 'Assets', icon: Package },
         { path: '/licenses', label: 'Licenses', icon: FileText },
-        { path: '/accessories', label: 'Accessories', icon: Package },
+        { path: '/accessories', label: 'Accessories', icon: Box },
     ];
 
     // Desktop sidebar items
@@ -22,7 +22,9 @@ const Layout = ({ children }) => {
         { path: '/', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/assets', label: 'Assets', icon: Package },
         { path: '/licenses', label: 'Licenses', icon: FileText },
-        { path: '/accessories', label: 'Accessories', icon: Package },
+        { path: '/accessories', label: 'Accessories', icon: Box },
+        { path: '/components', label: 'Components', icon: Puzzle },
+        { path: '/accounts', label: 'Accounts', icon: UserCircle },
         { path: '/locations', label: 'Locations', icon: MapPin },
         { path: '/users', label: 'Users', icon: Users },
     ];

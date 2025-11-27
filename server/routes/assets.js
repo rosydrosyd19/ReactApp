@@ -144,4 +144,88 @@ router.get('/:id/licenses', (req, res) => {
     });
 });
 
+// Get accessories assigned to an asset
+router.get('/:id/accessories', (req, res) => {
+    const assetId = req.params.id;
+
+    // First get the asset name
+    const getAssetSql = 'SELECT name FROM assets WHERE id = ?';
+    db.query(getAssetSql, [assetId], (err, assetResult) => {
+        if (err) return res.status(500).json(err);
+        if (assetResult.length === 0) return res.status(404).json({ message: 'Asset not found' });
+
+        const assetName = assetResult[0].name;
+
+        // Get all accessory assignments for this asset
+        const sql = `
+            SELECT aa.*, a.name as accessory_name, a.category, a.model_number
+            FROM accessory_assignments aa
+            JOIN accessories a ON aa.accessory_id = a.id
+            WHERE aa.assigned_to = ? AND aa.assigned_type = 'asset' AND aa.returned_at IS NULL
+            ORDER BY aa.assigned_at DESC
+        `;
+
+        db.query(sql, [assetName], (err, results) => {
+            if (err) return res.status(500).json(err);
+            res.json(results);
+        });
+    });
+});
+
+// Get components assigned to an asset
+router.get('/:id/components', (req, res) => {
+    const assetId = req.params.id;
+
+    // First get the asset name
+    const getAssetSql = 'SELECT name FROM assets WHERE id = ?';
+    db.query(getAssetSql, [assetId], (err, assetResult) => {
+        if (err) return res.status(500).json(err);
+        if (assetResult.length === 0) return res.status(404).json({ message: 'Asset not found' });
+
+        const assetName = assetResult[0].name;
+
+        // Get all component assignments for this asset
+        const sql = `
+            SELECT ca.*, c.name as component_name, c.category, c.model_number
+            FROM component_assignments ca
+            JOIN components c ON ca.component_id = c.id
+            WHERE ca.assigned_to = ?
+            ORDER BY ca.assigned_at DESC
+        `;
+
+        db.query(sql, [assetName], (err, results) => {
+            if (err) return res.status(500).json(err);
+            res.json(results);
+        });
+    });
+});
+
+// Get accounts assigned to an asset
+router.get('/:id/accounts', (req, res) => {
+    const assetId = req.params.id;
+
+    // First get the asset name
+    const getAssetSql = 'SELECT name FROM assets WHERE id = ?';
+    db.query(getAssetSql, [assetId], (err, assetResult) => {
+        if (err) return res.status(500).json(err);
+        if (assetResult.length === 0) return res.status(404).json({ message: 'Asset not found' });
+
+        const assetName = assetResult[0].name;
+
+        // Get all account assignments for this asset
+        const sql = `
+            SELECT aa.*, a.account_type, a.account_name, a.username
+            FROM account_assignments aa
+            JOIN accounts a ON aa.account_id = a.id
+            WHERE aa.assigned_to = ? AND aa.assigned_type = 'asset'
+            ORDER BY aa.assigned_at DESC
+        `;
+
+        db.query(sql, [assetName], (err, results) => {
+            if (err) return res.status(500).json(err);
+            res.json(results);
+        });
+    });
+});
+
 module.exports = router;
