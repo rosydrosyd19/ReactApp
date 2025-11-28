@@ -33,29 +33,41 @@ app.use('/api/accounts', accountsRouter);
 
 app.get('/api/dashboard', (req, res) => {
     const queries = {
-        total: 'SELECT COUNT(*) as count FROM assets',
-        ready: 'SELECT COUNT(*) as count FROM assets WHERE status = "Ready to Deploy"',
-        deployed: 'SELECT COUNT(*) as count FROM assets WHERE status = "Deployed"'
+        total: 'SELECT COUNT(*) as count FROM asset_items',
+        ready: 'SELECT COUNT(*) as count FROM asset_items WHERE status = "Ready to Deploy"',
+        deployed: 'SELECT COUNT(*) as count FROM asset_items WHERE status = "Deployed"',
+        maintenance: 'SELECT COUNT(*) as count FROM asset_maintenances WHERE status = "In Progress"',
+        licenses: 'SELECT COUNT(*) as count FROM asset_licenses',
+        recent_maintenance: `
+            SELECT m.*, a.name as asset_name 
+            FROM asset_maintenances m 
+            JOIN asset_items a ON m.asset_id = a.id 
+            ORDER BY m.start_date DESC 
+            LIMIT 5
+        `
     };
 
-    const results = {};
+    const promises = [
+        new Promise((resolve, reject) => db.query(queries.total, (err, data) => err ? reject(err) : resolve({ key: 'total', value: data[0].count }))),
+        new Promise((resolve, reject) => db.query(queries.ready, (err, data) => err ? reject(err) : resolve({ key: 'ready', value: data[0].count }))),
+        new Promise((resolve, reject) => db.query(queries.deployed, (err, data) => err ? reject(err) : resolve({ key: 'deployed', value: data[0].count }))),
+        new Promise((resolve, reject) => db.query(queries.maintenance, (err, data) => err ? reject(err) : resolve({ key: 'maintenance', value: data[0].count }))),
+        new Promise((resolve, reject) => db.query(queries.licenses, (err, data) => err ? reject(err) : resolve({ key: 'licenses', value: data[0].count }))),
+        new Promise((resolve, reject) => db.query(queries.recent_maintenance, (err, data) => err ? reject(err) : resolve({ key: 'recent_maintenance', value: data })))
+    ];
 
-    // Simple way to execute multiple queries sequentially for this example
-    db.query(queries.total, (err, data) => {
-        if (err) return res.status(500).json(err);
-        results.total = data[0].count;
-
-        db.query(queries.ready, (err, data) => {
-            if (err) return res.status(500).json(err);
-            results.ready = data[0].count;
-
-            db.query(queries.deployed, (err, data) => {
-                if (err) return res.status(500).json(err);
-                results.deployed = data[0].count;
-                res.json(results);
-            });
+    Promise.all(promises)
+        .then(results => {
+            const response = results.reduce((acc, curr) => {
+                acc[curr.key] = curr.value;
+                return acc;
+            }, {});
+            res.json(response);
+        })
+        .catch(err => {
+            console.error('Dashboard API Error:', err);
+            res.status(500).json(err);
         });
-    });
 });
 
 app.listen(PORT, () => {

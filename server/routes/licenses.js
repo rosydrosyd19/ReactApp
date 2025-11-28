@@ -6,8 +6,8 @@ const db = require('../db');
 router.get('/', (req, res) => {
     const sql = `
         SELECT l.*, 
-        (l.seats - COALESCE((SELECT COUNT(*) FROM license_assignments WHERE license_id = l.id AND returned_at IS NULL), 0)) as available_seats
-        FROM licenses l
+        (l.seats - COALESCE((SELECT COUNT(*) FROM asset_license_assignments WHERE license_id = l.id AND returned_at IS NULL), 0)) as available_seats
+        FROM asset_licenses l
         ORDER BY l.created_at DESC
     `;
     db.query(sql, (err, results) => {
@@ -20,8 +20,8 @@ router.get('/', (req, res) => {
 router.get('/:id', (req, res) => {
     const sql = `
         SELECT l.*, 
-        (l.seats - COALESCE((SELECT COUNT(*) FROM license_assignments WHERE license_id = l.id AND returned_at IS NULL), 0)) as available_seats
-        FROM licenses l
+        (l.seats - COALESCE((SELECT COUNT(*) FROM asset_license_assignments WHERE license_id = l.id AND returned_at IS NULL), 0)) as available_seats
+        FROM asset_licenses l
         WHERE l.id = ?
     `;
     db.query(sql, [req.params.id], (err, result) => {
@@ -34,7 +34,7 @@ router.get('/:id', (req, res) => {
 // Create license
 router.post('/', (req, res) => {
     const { software_name, product_key, seats, purchase_date, expiration_date, notes } = req.body;
-    const sql = 'INSERT INTO licenses (software_name, product_key, seats, purchase_date, expiration_date, notes) VALUES (?, ?, ?, ?, ?, ?)';
+    const sql = 'INSERT INTO asset_licenses (software_name, product_key, seats, purchase_date, expiration_date, notes) VALUES (?, ?, ?, ?, ?, ?)';
     db.query(sql, [software_name, product_key, seats, purchase_date, expiration_date, notes], (err, result) => {
         if (err) return res.status(500).json(err);
         res.status(201).json({ id: result.insertId, ...req.body });
@@ -44,7 +44,7 @@ router.post('/', (req, res) => {
 // Update license
 router.put('/:id', (req, res) => {
     const { software_name, product_key, seats, purchase_date, expiration_date, notes } = req.body;
-    const sql = 'UPDATE licenses SET software_name = ?, product_key = ?, seats = ?, purchase_date = ?, expiration_date = ?, notes = ? WHERE id = ?';
+    const sql = 'UPDATE asset_licenses SET software_name = ?, product_key = ?, seats = ?, purchase_date = ?, expiration_date = ?, notes = ? WHERE id = ?';
     db.query(sql, [software_name, product_key, seats, purchase_date, expiration_date, notes, req.params.id], (err, result) => {
         if (err) return res.status(500).json(err);
         res.json({ message: 'License updated successfully' });
@@ -53,7 +53,7 @@ router.put('/:id', (req, res) => {
 
 // Delete license
 router.delete('/:id', (req, res) => {
-    const sql = 'DELETE FROM licenses WHERE id = ?';
+    const sql = 'DELETE FROM asset_licenses WHERE id = ?';
     db.query(sql, [req.params.id], (err, result) => {
         if (err) return res.status(500).json(err);
         res.json({ message: 'License deleted successfully' });
@@ -68,8 +68,8 @@ router.post('/:id/checkout', (req, res) => {
     // Check available seats
     const checkSql = `
         SELECT l.seats, 
-        (l.seats - COALESCE((SELECT COUNT(*) FROM license_assignments WHERE license_id = l.id AND returned_at IS NULL), 0)) as available_seats
-        FROM licenses l WHERE l.id = ?
+        (l.seats - COALESCE((SELECT COUNT(*) FROM asset_license_assignments WHERE license_id = l.id AND returned_at IS NULL), 0)) as available_seats
+        FROM asset_licenses l WHERE l.id = ?
     `;
     db.query(checkSql, [licenseId], (err, result) => {
         if (err) return res.status(500).json(err);
@@ -80,7 +80,7 @@ router.post('/:id/checkout', (req, res) => {
         }
 
         // Assign seat
-        const assignSql = 'INSERT INTO license_assignments (license_id, assigned_to, assigned_type, notes) VALUES (?, ?, ?, ?)';
+        const assignSql = 'INSERT INTO asset_license_assignments (license_id, assigned_to, assigned_type, notes) VALUES (?, ?, ?, ?)';
         db.query(assignSql, [licenseId, assigned_to, assigned_type, notes], (err) => {
             if (err) return res.status(500).json(err);
             res.json({ message: 'License seat assigned successfully' });
@@ -92,7 +92,7 @@ router.post('/:id/checkout', (req, res) => {
 router.post('/:id/checkin/:assignmentId', (req, res) => {
     const { assignmentId } = req.params;
 
-    const sql = 'UPDATE license_assignments SET returned_at = NOW() WHERE id = ?';
+    const sql = 'UPDATE asset_license_assignments SET returned_at = NOW() WHERE id = ?';
     db.query(sql, [assignmentId], (err) => {
         if (err) return res.status(500).json(err);
         res.json({ message: 'License seat returned successfully' });
@@ -101,7 +101,7 @@ router.post('/:id/checkin/:assignmentId', (req, res) => {
 
 // Get license assignments
 router.get('/:id/assignments', (req, res) => {
-    const sql = 'SELECT * FROM license_assignments WHERE license_id = ? ORDER BY assigned_at DESC';
+    const sql = 'SELECT * FROM asset_license_assignments WHERE license_id = ? ORDER BY assigned_at DESC';
     db.query(sql, [req.params.id], (err, results) => {
         if (err) return res.status(500).json(err);
         res.json(results);
@@ -115,7 +115,7 @@ router.get('/:id/accounts', (req, res) => {
     // Get all account assignments for this license
     const sql = `
         SELECT aa.*, a.account_type, a.account_name, a.username
-        FROM account_assignments aa
+        FROM asset_account_assignments aa
         JOIN accounts a ON aa.account_id = a.id
         WHERE aa.assigned_to = ? AND aa.assigned_type = 'license'
         ORDER BY aa.assigned_at DESC

@@ -4,7 +4,7 @@ const db = require('../db');
 
 // GET all accounts
 router.get('/', (req, res) => {
-    const query = 'SELECT * FROM accounts ORDER BY created_at DESC';
+    const query = 'SELECT * FROM asset_accounts ORDER BY created_at DESC';
     db.query(query, (err, data) => {
         if (err) return res.status(500).json(err);
         res.json(data);
@@ -13,14 +13,14 @@ router.get('/', (req, res) => {
 
 // GET account by ID with assignments
 router.get('/:id', (req, res) => {
-    const accountQuery = 'SELECT * FROM accounts WHERE id = ?';
+    const accountQuery = 'SELECT * FROM asset_accounts WHERE id = ?';
     const assignmentsQuery = `
         SELECT aa.*, 
                CASE 
                    WHEN aa.assigned_type = 'asset' THEN a.name
                    WHEN aa.assigned_type = 'license' THEN l.software_name
                END as assigned_name
-        FROM account_assignments aa
+        FROM asset_account_assignments aa
         LEFT JOIN assets a ON aa.assigned_to = a.name AND aa.assigned_type = 'asset'
         LEFT JOIN licenses l ON aa.assigned_to = l.id AND aa.assigned_type = 'license'
         WHERE aa.account_id = ?
@@ -46,7 +46,7 @@ router.post('/', (req, res) => {
     const { account_type, account_name, username, password, notes } = req.body;
 
     const query = `
-        INSERT INTO accounts 
+        INSERT INTO asset_accounts 
         (account_type, account_name, username, password, notes) 
         VALUES (?, ?, ?, ?, ?)
     `;
@@ -66,7 +66,7 @@ router.put('/:id', (req, res) => {
     const { account_type, account_name, username, password, notes } = req.body;
 
     const query = `
-        UPDATE accounts 
+        UPDATE asset_accounts 
         SET account_type = ?, account_name = ?, username = ?, password = ?, notes = ?
         WHERE id = ?
     `;
@@ -83,7 +83,7 @@ router.put('/:id', (req, res) => {
 
 // DELETE account
 router.delete('/:id', (req, res) => {
-    db.query('DELETE FROM accounts WHERE id = ?', [req.params.id], (err, data) => {
+    db.query('DELETE FROM asset_accounts WHERE id = ?', [req.params.id], (err, data) => {
         if (err) return res.status(500).json(err);
         res.json({ message: 'Account deleted successfully' });
     });
@@ -100,7 +100,7 @@ router.post('/:id/checkout', (req, res) => {
     }
 
     // Create assignment
-    const assignQuery = 'INSERT INTO account_assignments (account_id, assigned_to, assigned_type, notes) VALUES (?, ?, ?, ?)';
+    const assignQuery = 'INSERT INTO asset_account_assignments (account_id, assigned_to, assigned_type, notes) VALUES (?, ?, ?, ?)';
     db.query(assignQuery, [accountId, assigned_to, assigned_type, notes], (err, data) => {
         if (err) return res.status(500).json(err);
         res.json({ message: 'Account checked out successfully' });
@@ -112,7 +112,7 @@ router.post('/:id/checkin', (req, res) => {
     const { assignment_id } = req.body;
 
     // Delete assignment
-    db.query('DELETE FROM account_assignments WHERE id = ?', [assignment_id], (err, data) => {
+    db.query('DELETE FROM asset_account_assignments WHERE id = ?', [assignment_id], (err, data) => {
         if (err) return res.status(500).json(err);
         res.json({ message: 'Account checked in successfully' });
     });

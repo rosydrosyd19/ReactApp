@@ -5,7 +5,7 @@ const upload = require('../middleware/upload');
 
 // Get all accessories
 router.get('/', (req, res) => {
-    const sql = 'SELECT * FROM accessories ORDER BY created_at DESC';
+    const sql = 'SELECT * FROM asset_accessories ORDER BY created_at DESC';
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json(err);
         res.json(results);
@@ -14,7 +14,7 @@ router.get('/', (req, res) => {
 
 // Get single accessory
 router.get('/:id', (req, res) => {
-    const sql = 'SELECT * FROM accessories WHERE id = ?';
+    const sql = 'SELECT * FROM asset_accessories WHERE id = ?';
     db.query(sql, [req.params.id], (err, result) => {
         if (err) return res.status(500).json(err);
         if (result.length === 0) return res.status(404).json({ message: 'Accessory not found' });
@@ -29,7 +29,7 @@ router.post('/', upload.single('image'), (req, res) => {
     const available_quantity = total_quantity;
     const image_url = req.file ? `/uploads/${req.file.filename}` : null;
 
-    const sql = 'INSERT INTO accessories (name, category, manufacturer, model_number, total_quantity, available_quantity, purchase_date, cost, notes, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    const sql = 'INSERT INTO asset_accessories (name, category, manufacturer, model_number, total_quantity, available_quantity, purchase_date, cost, notes, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
     db.query(sql, [name, category, manufacturer, model_number, total_quantity, available_quantity, purchase_date, cost, notes, image_url], (err, result) => {
         if (err) return res.status(500).json(err);
         res.status(201).json({ id: result.insertId, ...req.body, available_quantity, image_url });
@@ -43,7 +43,7 @@ router.put('/:id', upload.single('image'), (req, res) => {
     // We need to handle quantity changes carefully. 
     // For simplicity, if total_quantity changes, we adjust available_quantity by the difference.
     // First, get current total_quantity
-    const getSql = 'SELECT total_quantity, available_quantity FROM accessories WHERE id = ?';
+    const getSql = 'SELECT total_quantity, available_quantity FROM asset_accessories WHERE id = ?';
     db.query(getSql, [req.params.id], (err, result) => {
         if (err) return res.status(500).json(err);
         if (result.length === 0) return res.status(404).json({ message: 'Accessory not found' });
@@ -59,13 +59,13 @@ router.put('/:id', upload.single('image'), (req, res) => {
 
         if (req.file) {
             const image_url = `/uploads/${req.file.filename}`;
-            const sql = 'UPDATE accessories SET name = ?, category = ?, manufacturer = ?, model_number = ?, total_quantity = ?, available_quantity = ?, purchase_date = ?, cost = ?, notes = ?, image_url = ? WHERE id = ?';
+            const sql = 'UPDATE asset_accessories SET name = ?, category = ?, manufacturer = ?, model_number = ?, total_quantity = ?, available_quantity = ?, purchase_date = ?, cost = ?, notes = ?, image_url = ? WHERE id = ?';
             db.query(sql, [name, category, manufacturer, model_number, total_quantity, newAvailable, purchase_date, cost, notes, image_url, req.params.id], (err, result) => {
                 if (err) return res.status(500).json(err);
                 res.json({ message: 'Accessory updated successfully' });
             });
         } else {
-            const sql = 'UPDATE accessories SET name = ?, category = ?, manufacturer = ?, model_number = ?, total_quantity = ?, available_quantity = ?, purchase_date = ?, cost = ?, notes = ? WHERE id = ?';
+            const sql = 'UPDATE asset_accessories SET name = ?, category = ?, manufacturer = ?, model_number = ?, total_quantity = ?, available_quantity = ?, purchase_date = ?, cost = ?, notes = ? WHERE id = ?';
             db.query(sql, [name, category, manufacturer, model_number, total_quantity, newAvailable, purchase_date, cost, notes, req.params.id], (err, result) => {
                 if (err) return res.status(500).json(err);
                 res.json({ message: 'Accessory updated successfully' });
@@ -76,7 +76,7 @@ router.put('/:id', upload.single('image'), (req, res) => {
 
 // Delete accessory
 router.delete('/:id', (req, res) => {
-    const sql = 'DELETE FROM accessories WHERE id = ?';
+    const sql = 'DELETE FROM asset_accessories WHERE id = ?';
     db.query(sql, [req.params.id], (err, result) => {
         if (err) return res.status(500).json(err);
         res.json({ message: 'Accessory deleted successfully' });
@@ -90,7 +90,7 @@ router.post('/:id/checkout', (req, res) => {
     const checkoutQty = parseInt(quantity) || 1;
 
     // Check available quantity
-    const checkSql = 'SELECT available_quantity FROM accessories WHERE id = ?';
+    const checkSql = 'SELECT available_quantity FROM asset_accessories WHERE id = ?';
     db.query(checkSql, [accessoryId], (err, result) => {
         if (err) return res.status(500).json(err);
         if (result.length === 0) return res.status(404).json({ message: 'Accessory not found' });
@@ -100,15 +100,15 @@ router.post('/:id/checkout', (req, res) => {
         }
 
         // Start transaction (simulated with callbacks)
-        const updateSql = 'UPDATE accessories SET available_quantity = available_quantity - ? WHERE id = ?';
+        const updateSql = 'UPDATE asset_accessories SET available_quantity = available_quantity - ? WHERE id = ?';
         db.query(updateSql, [checkoutQty, accessoryId], (err) => {
             if (err) return res.status(500).json(err);
 
-            const assignSql = 'INSERT INTO accessory_assignments (accessory_id, assigned_to, assigned_type, quantity, notes) VALUES (?, ?, ?, ?, ?)';
+            const assignSql = 'INSERT INTO asset_accessory_assignments (accessory_id, assigned_to, assigned_type, quantity, notes) VALUES (?, ?, ?, ?, ?)';
             db.query(assignSql, [accessoryId, assigned_to, assigned_type, checkoutQty, notes], (err) => {
                 if (err) {
                     // Rollback quantity update (best effort)
-                    db.query('UPDATE accessories SET available_quantity = available_quantity + ? WHERE id = ?', [checkoutQty, accessoryId]);
+                    db.query('UPDATE asset_accessories SET available_quantity = available_quantity + ? WHERE id = ?', [checkoutQty, accessoryId]);
                     return res.status(500).json(err);
                 }
                 res.json({ message: 'Accessory checked out successfully' });
@@ -123,18 +123,18 @@ router.post('/:id/checkin/:assignmentId', (req, res) => {
     const accessoryId = req.params.id;
 
     // Get assignment details to know quantity
-    const getAssignSql = 'SELECT quantity FROM accessory_assignments WHERE id = ? AND accessory_id = ? AND returned_at IS NULL';
+    const getAssignSql = 'SELECT quantity FROM asset_accessory_assignments WHERE id = ? AND accessory_id = ? AND returned_at IS NULL';
     db.query(getAssignSql, [assignmentId, accessoryId], (err, result) => {
         if (err) return res.status(500).json(err);
         if (result.length === 0) return res.status(404).json({ message: 'Active assignment not found' });
 
         const returnQty = result[0].quantity;
 
-        const updateAssignSql = 'UPDATE accessory_assignments SET returned_at = NOW() WHERE id = ?';
+        const updateAssignSql = 'UPDATE asset_accessory_assignments SET returned_at = NOW() WHERE id = ?';
         db.query(updateAssignSql, [assignmentId], (err) => {
             if (err) return res.status(500).json(err);
 
-            const updateAccessorySql = 'UPDATE accessories SET available_quantity = available_quantity + ? WHERE id = ?';
+            const updateAccessorySql = 'UPDATE asset_accessories SET available_quantity = available_quantity + ? WHERE id = ?';
             db.query(updateAccessorySql, [returnQty, accessoryId], (err) => {
                 if (err) return res.status(500).json(err);
                 res.json({ message: 'Accessory returned successfully' });
@@ -145,7 +145,7 @@ router.post('/:id/checkin/:assignmentId', (req, res) => {
 
 // Get accessory assignments
 router.get('/:id/assignments', (req, res) => {
-    const sql = 'SELECT * FROM accessory_assignments WHERE accessory_id = ? ORDER BY assigned_at DESC';
+    const sql = 'SELECT * FROM asset_accessory_assignments WHERE accessory_id = ? ORDER BY assigned_at DESC';
     db.query(sql, [req.params.id], (err, results) => {
         if (err) return res.status(500).json(err);
         res.json(results);
