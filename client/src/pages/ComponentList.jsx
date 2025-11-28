@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Edit, Trash2, Package, Eye, LogOut, Search, QrCode, X } from 'lucide-react';
+import { Edit, Trash2, Package, Eye, LogOut, Search, QrCode, X, Printer } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
+import BulkQRPrintModal from '../components/BulkQRPrintModal';
 
 const ComponentList = () => {
     const [components, setComponents] = useState([]);
@@ -18,6 +19,8 @@ const ComponentList = () => {
     });
     const [assets, setAssets] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedComponents, setSelectedComponents] = useState([]);
+    const [showBulkPrintModal, setShowBulkPrintModal] = useState(false);
 
     useEffect(() => {
         fetchComponents();
@@ -85,6 +88,32 @@ const ComponentList = () => {
         }
     };
 
+    const handleSelectComponent = (componentId) => {
+        setSelectedComponents(prev => {
+            if (prev.includes(componentId)) {
+                return prev.filter(id => id !== componentId);
+            } else {
+                return [...prev, componentId];
+            }
+        });
+    };
+
+    const handleSelectAll = () => {
+        if (selectedComponents.length === filteredComponents.length) {
+            setSelectedComponents([]);
+        } else {
+            setSelectedComponents(filteredComponents.map(comp => comp.id));
+        }
+    };
+
+    const handleBulkPrint = () => {
+        setShowBulkPrintModal(true);
+    };
+
+    const getSelectedComponentsData = () => {
+        return components.filter(comp => selectedComponents.includes(comp.id));
+    };
+
     const filteredComponents = components.filter(comp => {
         const query = searchQuery.toLowerCase();
         return (
@@ -98,12 +127,23 @@ const ComponentList = () => {
         <div className="space-y-6">
             <div className="flex flex-row justify-between items-center gap-4 mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Components</h2>
-                <Link
-                    to="/components/create"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                    + Add
-                </Link>
+                <div className="flex gap-3">
+                    {selectedComponents.length > 0 && (
+                        <button
+                            onClick={handleBulkPrint}
+                            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                        >
+                            <Printer size={18} />
+                            Print QR ({selectedComponents.length})
+                        </button>
+                    )}
+                    <Link
+                        to="/components/create"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                        + Add
+                    </Link>
+                </div>
             </div>
 
             {/* Search Bar */}
@@ -133,6 +173,14 @@ const ComponentList = () => {
                         <table className="w-full text-left">
                             <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">
                                 <tr>
+                                    <th className="p-4">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedComponents.length === filteredComponents.length && filteredComponents.length > 0}
+                                            onChange={handleSelectAll}
+                                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                                        />
+                                    </th>
                                     <th className="p-4">Image</th>
                                     <th className="p-4">Name</th>
                                     <th className="p-4">Category</th>
@@ -144,7 +192,15 @@ const ComponentList = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                 {filteredComponents.map((comp) => (
-                                    <tr key={comp.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                    <tr key={comp.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${selectedComponents.includes(comp.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
+                                        <td className="p-4">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedComponents.includes(comp.id)}
+                                                onChange={() => handleSelectComponent(comp.id)}
+                                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                                            />
+                                        </td>
                                         <td className="p-4">
                                             {comp.image_url ? (
                                                 <img
@@ -231,10 +287,18 @@ const ComponentList = () => {
                     filteredComponents.map((comp) => (
                         <div
                             key={comp.id}
-                            className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden"
+                            className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden ${selectedComponents.includes(comp.id) ? 'ring-2 ring-blue-500' : ''}`}
                         >
                             <div className="p-4">
                                 <div className="flex items-start mb-3">
+                                    <div className="mr-3 flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedComponents.includes(comp.id)}
+                                            onChange={() => handleSelectComponent(comp.id)}
+                                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                                        />
+                                    </div>
                                     <div className="mr-3">
                                         {comp.image_url ? (
                                             <img
@@ -426,6 +490,18 @@ const ComponentList = () => {
                     </div>
                 </div>
             )}
+
+            {/* Bulk QR Print Modal */}
+            <BulkQRPrintModal
+                items={getSelectedComponentsData()}
+                itemType="component"
+                isOpen={showBulkPrintModal}
+                onClose={() => {
+                    setShowBulkPrintModal(false);
+                    setSelectedComponents([]);
+                }}
+                getItemUrl={(comp) => `http://localhost:3000/components/detail/${comp.id}`}
+            />
         </div>
     );
 };

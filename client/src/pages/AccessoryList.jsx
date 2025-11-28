@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Edit, Trash2, Package, Eye, LogOut, LogIn, Search, QrCode, X } from 'lucide-react';
+import { Edit, Trash2, Package, Eye, LogOut, LogIn, Search, QrCode, X, Printer } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
+import BulkQRPrintModal from '../components/BulkQRPrintModal';
 
 const AccessoryList = () => {
     const [accessories, setAccessories] = useState([]);
@@ -21,6 +22,8 @@ const AccessoryList = () => {
     const [assets, setAssets] = useState([]);
     const [locations, setLocations] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedAccessories, setSelectedAccessories] = useState([]);
+    const [showBulkPrintModal, setShowBulkPrintModal] = useState(false);
 
     useEffect(() => {
         fetchAccessories();
@@ -122,6 +125,32 @@ const AccessoryList = () => {
         }
     };
 
+    const handleSelectAccessory = (accessoryId) => {
+        setSelectedAccessories(prev => {
+            if (prev.includes(accessoryId)) {
+                return prev.filter(id => id !== accessoryId);
+            } else {
+                return [...prev, accessoryId];
+            }
+        });
+    };
+
+    const handleSelectAll = () => {
+        if (selectedAccessories.length === filteredAccessories.length) {
+            setSelectedAccessories([]);
+        } else {
+            setSelectedAccessories(filteredAccessories.map(acc => acc.id));
+        }
+    };
+
+    const handleBulkPrint = () => {
+        setShowBulkPrintModal(true);
+    };
+
+    const getSelectedAccessoriesData = () => {
+        return accessories.filter(acc => selectedAccessories.includes(acc.id));
+    };
+
     // Filter accessories based on search query
     const filteredAccessories = accessories.filter(acc => {
         const query = searchQuery.toLowerCase();
@@ -136,12 +165,23 @@ const AccessoryList = () => {
         <div className="space-y-6">
             <div className="flex flex-row justify-between items-center gap-4 mb-6">
                 <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Accessories</h1>
-                <Link
-                    to="/accessories/create"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                    + Add
-                </Link>
+                <div className="flex gap-3">
+                    {selectedAccessories.length > 0 && (
+                        <button
+                            onClick={handleBulkPrint}
+                            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                        >
+                            <Printer size={18} />
+                            Print QR ({selectedAccessories.length})
+                        </button>
+                    )}
+                    <Link
+                        to="/accessories/create"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                        + Add
+                    </Link>
+                </div>
             </div>
 
             {/* Search Bar */}
@@ -171,6 +211,14 @@ const AccessoryList = () => {
                         <table className="w-full text-left">
                             <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">
                                 <tr>
+                                    <th className="p-4">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedAccessories.length === filteredAccessories.length && filteredAccessories.length > 0}
+                                            onChange={handleSelectAll}
+                                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                                        />
+                                    </th>
                                     <th className="p-4">Image</th>
                                     <th className="p-4">Name</th>
                                     <th className="p-4">Category</th>
@@ -182,7 +230,15 @@ const AccessoryList = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                 {filteredAccessories.map((acc) => (
-                                    <tr key={acc.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                    <tr key={acc.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${selectedAccessories.includes(acc.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
+                                        <td className="p-4">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedAccessories.includes(acc.id)}
+                                                onChange={() => handleSelectAccessory(acc.id)}
+                                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                                            />
+                                        </td>
                                         <td className="p-4">
                                             {acc.image_url ? (
                                                 <img
@@ -269,10 +325,18 @@ const AccessoryList = () => {
                     filteredAccessories.map((acc) => (
                         <div
                             key={acc.id}
-                            className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden"
+                            className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden ${selectedAccessories.includes(acc.id) ? 'ring-2 ring-blue-500' : ''}`}
                         >
                             <div className="p-4">
                                 <div className="flex items-start mb-3">
+                                    <div className="mr-3 flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedAccessories.includes(acc.id)}
+                                            onChange={() => handleSelectAccessory(acc.id)}
+                                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                                        />
+                                    </div>
                                     <div className="mr-3">
                                         {acc.image_url ? (
                                             <img
@@ -503,6 +567,18 @@ const AccessoryList = () => {
                     </div>
                 </div>
             )}
+
+            {/* Bulk QR Print Modal */}
+            <BulkQRPrintModal
+                items={getSelectedAccessoriesData()}
+                itemType="accessory"
+                isOpen={showBulkPrintModal}
+                onClose={() => {
+                    setShowBulkPrintModal(false);
+                    setSelectedAccessories([]);
+                }}
+                getItemUrl={(acc) => `http://localhost:3000/accessories/detail/${acc.id}`}
+            />
         </div>
     );
 };

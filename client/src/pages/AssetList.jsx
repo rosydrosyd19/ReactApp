@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Edit, Trash2, Plus, Search, Package, LogIn, LogOut, Eye, QrCode, X } from 'lucide-react';
+import { Edit, Trash2, Plus, Search, Package, LogIn, LogOut, Eye, QrCode, X, Printer } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
+import BulkQRPrintModal from '../components/BulkQRPrintModal';
 
 const AssetList = () => {
     const [assets, setAssets] = useState([]);
@@ -21,6 +22,8 @@ const AssetList = () => {
     const [checkoutType, setCheckoutType] = useState('user');
     const [users, setUsers] = useState([]);
     const [locations, setLocations] = useState([]);
+    const [selectedAssets, setSelectedAssets] = useState([]);
+    const [showBulkPrintModal, setShowBulkPrintModal] = useState(false);
 
     useEffect(() => {
         fetchAssets();
@@ -116,6 +119,32 @@ const AssetList = () => {
         setShowQrModal(true);
     };
 
+    const handleSelectAsset = (assetId) => {
+        setSelectedAssets(prev => {
+            if (prev.includes(assetId)) {
+                return prev.filter(id => id !== assetId);
+            } else {
+                return [...prev, assetId];
+            }
+        });
+    };
+
+    const handleSelectAll = () => {
+        if (selectedAssets.length === filteredAssets.length) {
+            setSelectedAssets([]);
+        } else {
+            setSelectedAssets(filteredAssets.map(asset => asset.id));
+        }
+    };
+
+    const handleBulkPrint = () => {
+        setShowBulkPrintModal(true);
+    };
+
+    const getSelectedAssetsData = () => {
+        return assets.filter(asset => selectedAssets.includes(asset.id));
+    };
+
     const filteredAssets = assets.filter((asset) =>
         asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         asset.serial_number.toLowerCase().includes(searchTerm.toLowerCase())
@@ -137,12 +166,23 @@ const AssetList = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Assets</h2>
-                <Link
-                    to="/assets/create"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                    + Add
-                </Link>
+                <div className="flex gap-3">
+                    {selectedAssets.length > 0 && (
+                        <button
+                            onClick={handleBulkPrint}
+                            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                        >
+                            <Printer size={18} />
+                            Print QR ({selectedAssets.length})
+                        </button>
+                    )}
+                    <Link
+                        to="/assets/create"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                        + Add
+                    </Link>
+                </div>
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
@@ -164,6 +204,14 @@ const AssetList = () => {
                     <table className="w-full text-left">
                         <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">
                             <tr>
+                                <th className="p-4">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedAssets.length === filteredAssets.length && filteredAssets.length > 0}
+                                        onChange={handleSelectAll}
+                                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                                    />
+                                </th>
                                 <th className="p-4">Image</th>
                                 <th className="p-4">Name</th>
                                 <th className="p-4">Category</th>
@@ -175,7 +223,15 @@ const AssetList = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                             {filteredAssets.map((asset) => (
-                                <tr key={asset.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <tr key={asset.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${selectedAssets.includes(asset.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
+                                    <td className="p-4">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedAssets.includes(asset.id)}
+                                            onChange={() => handleSelectAsset(asset.id)}
+                                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                                        />
+                                    </td>
                                     <td className="p-4">
                                         {asset.image_url ? (
                                             <img
@@ -258,7 +314,7 @@ const AssetList = () => {
                             ))}
                             {filteredAssets.length === 0 && !loading && (
                                 <tr>
-                                    <td colSpan="7" className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                    <td colSpan="8" className="p-8 text-center text-gray-500 dark:text-gray-400">
                                         No assets found.
                                     </td>
                                 </tr>
@@ -273,9 +329,17 @@ const AssetList = () => {
                 {filteredAssets.map((asset) => (
                     <div
                         key={asset.id}
-                        className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden"
+                        className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden ${selectedAssets.includes(asset.id) ? 'ring-2 ring-blue-500' : ''}`}
                     >
                         <div className="flex">
+                            <div className="flex items-center justify-center px-3 bg-gray-50 dark:bg-gray-700/50">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedAssets.includes(asset.id)}
+                                    onChange={() => handleSelectAsset(asset.id)}
+                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                                />
+                            </div>
                             {asset.image_url ? (
                                 <img
                                     src={`http://localhost:5000${asset.image_url}`}
@@ -536,6 +600,18 @@ const AssetList = () => {
                     </div>
                 </div>
             )}
+
+            {/* Bulk QR Print Modal */}
+            <BulkQRPrintModal
+                items={getSelectedAssetsData()}
+                itemType="asset"
+                isOpen={showBulkPrintModal}
+                onClose={() => {
+                    setShowBulkPrintModal(false);
+                    setSelectedAssets([]);
+                }}
+                getItemUrl={(asset) => `http://localhost:3000/assets/detail/${asset.id}`}
+            />
         </div>
     );
 };
