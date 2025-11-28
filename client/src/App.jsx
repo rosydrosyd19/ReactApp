@@ -1,29 +1,29 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from './context/ThemeContext';
-import Layout from './components/Layout';
-import Dashboard from './pages/Dashboard';
-import AssetList from './pages/AssetList';
-import AssetForm from './pages/AssetForm';
-import AssetDetail from './pages/AssetDetail';
-import LocationList from './pages/LocationList';
-import LocationForm from './pages/LocationForm';
-import LocationDetail from './pages/LocationDetail';
-import UserList from './pages/UserList';
-import UserForm from './pages/UserForm';
-import UserDetail from './pages/UserDetail';
-import Licenses from './pages/Licenses';
-import LicenseForm from './pages/LicenseForm';
-import LicenseDetail from './pages/LicenseDetail';
-import AccessoryList from './pages/AccessoryList';
-import AccessoryForm from './pages/AccessoryForm';
-import AccessoryDetail from './pages/AccessoryDetail';
-import ComponentList from './pages/ComponentList';
-import ComponentForm from './pages/ComponentForm';
-import ComponentDetail from './pages/ComponentDetail';
-import AccountList from './pages/AccountList';
-import AccountForm from './pages/AccountForm';
-import AccountDetail from './pages/AccountDetail';
+import { ThemeProvider } from './modules/core/context/ThemeContext';
+import Layout from './modules/core/components/Layout';
+import Dashboard from './modules/core/pages/Dashboard';
+import AssetList from './modules/asset/pages/assets/AssetList';
+import AssetForm from './modules/asset/pages/assets/AssetForm';
+import AssetDetail from './modules/asset/pages/assets/AssetDetail';
+import LocationList from './modules/asset/pages/locations/LocationList';
+import LocationForm from './modules/asset/pages/locations/LocationForm';
+import LocationDetail from './modules/asset/pages/locations/LocationDetail';
+import UserList from './modules/asset/pages/users/UserList';
+import UserForm from './modules/asset/pages/users/UserForm';
+import UserDetail from './modules/asset/pages/users/UserDetail';
+import LicenseList from './modules/asset/pages/licenses/LicenseList';
+import LicenseForm from './modules/asset/pages/licenses/LicenseForm';
+import LicenseDetail from './modules/asset/pages/licenses/LicenseDetail';
+import AccessoryList from './modules/asset/pages/accessories/AccessoryList';
+import AccessoryForm from './modules/asset/pages/accessories/AccessoryForm';
+import AccessoryDetail from './modules/asset/pages/accessories/AccessoryDetail';
+import ComponentList from './modules/asset/pages/components/ComponentList';
+import ComponentForm from './modules/asset/pages/components/ComponentForm';
+import ComponentDetail from './modules/asset/pages/components/ComponentDetail';
+import AccountList from './modules/asset/pages/accounts/AccountList';
+import AccountForm from './modules/asset/pages/accounts/AccountForm';
+import AccountDetail from './modules/asset/pages/accounts/AccountDetail';
 
 function App() {
   return (
@@ -44,7 +44,7 @@ function App() {
             <Route path="/users/create" element={<UserForm />} />
             <Route path="/users/edit/:id" element={<UserForm />} />
             <Route path="/users/detail/:id" element={<UserDetail />} />
-            <Route path="/licenses" element={<Licenses />} />
+            <Route path="/licenses" element={<LicenseList />} />
             <Route path="/licenses/create" element={<LicenseForm />} />
             <Route path="/licenses/edit/:id" element={<LicenseForm />} />
             <Route path="/licenses/detail/:id" element={<LicenseDetail />} />
