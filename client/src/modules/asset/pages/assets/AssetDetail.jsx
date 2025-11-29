@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Package, Calendar, Tag, Hash, FileText, Clock, User as UserIcon, Key, User, QrCode } from 'lucide-react';
+import { ArrowLeft, Package, Calendar, Tag, Hash, FileText, Clock, User as UserIcon, Key, User, QrCode, Wrench, Plus, Edit, Trash2 } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
+import MaintenanceForm from '../../components/MaintenanceForm';
 
 const AssetDetail = () => {
     const { id } = useParams();
@@ -13,7 +14,10 @@ const AssetDetail = () => {
     const [accessories, setAccessories] = useState([]);
     const [components, setComponents] = useState([]);
     const [accounts, setAccounts] = useState([]);
+    const [maintenances, setMaintenances] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showMaintenanceForm, setShowMaintenanceForm] = useState(false);
+    const [selectedMaintenance, setSelectedMaintenance] = useState(null);
 
     useEffect(() => {
         fetchAsset();
@@ -22,6 +26,7 @@ const AssetDetail = () => {
         fetchAccessories();
         fetchComponents();
         fetchAccounts();
+        fetchMaintenances();
     }, [id]);
 
     const fetchAsset = async () => {
@@ -77,6 +82,32 @@ const AssetDetail = () => {
             setAccounts(res.data);
         } catch (error) {
             console.error('Error fetching accounts:', error);
+        }
+    };
+
+    const fetchMaintenances = async () => {
+        try {
+            const res = await axios.get(`http://localhost:5000/api/assets/${id}/maintenance`);
+            setMaintenances(res.data);
+        } catch (error) {
+            console.error('Error fetching maintenances:', error);
+        }
+    };
+
+    const handleEditMaintenance = (maintenance) => {
+        setSelectedMaintenance(maintenance);
+        setShowMaintenanceForm(true);
+    };
+
+    const handleDeleteMaintenance = async (maintenanceId) => {
+        if (window.confirm('Are you sure you want to delete this maintenance record?')) {
+            try {
+                await axios.delete(`http://localhost:5000/api/assets/maintenance/${maintenanceId}`);
+                fetchMaintenances();
+            } catch (error) {
+                console.error('Error deleting maintenance:', error);
+                alert('Failed to delete maintenance record');
+            }
         }
     };
 
@@ -195,6 +226,101 @@ const AssetDetail = () => {
                             )}
                         </div>
                     )}
+
+                    {/* Maintenance History */}
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h4 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                                <Wrench size={20} className="text-blue-600" />
+                                Maintenance History
+                            </h4>
+                            <button
+                                onClick={() => {
+                                    setSelectedMaintenance(null);
+                                    setShowMaintenanceForm(true);
+                                }}
+                                className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors"
+                            >
+                                <Plus size={16} />
+                                Add Record
+                            </button>
+                        </div>
+
+                        {maintenances.length > 0 ? (
+                            <div className="space-y-4">
+                                {maintenances.map((record) => (
+                                    <div key={record.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${record.status === 'Completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                                                            record.status === 'In Progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                                                record.status === 'Scheduled' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                                                    'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
+                                                        }`}>
+                                                        {record.status}
+                                                    </span>
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">•</span>
+                                                    <span className="text-sm font-medium text-gray-900 dark:text-white">{record.maintenance_type}</span>
+                                                </div>
+                                                <h5 className="font-semibold text-gray-800 dark:text-white mb-1">{record.title}</h5>
+                                                <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{record.description}</p>
+                                                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                                                    <span className="flex items-center gap-1">
+                                                        <Calendar size={12} />
+                                                        {new Date(record.start_date).toLocaleDateString()}
+                                                        {record.completion_date && ` - ${new Date(record.completion_date).toLocaleDateString()}`}
+                                                    </span>
+                                                    {record.cost && (
+                                                        <span className="flex items-center gap-1">
+                                                            <span className="font-mono">$</span>
+                                                            {parseFloat(record.cost).toFixed(2)}
+                                                        </span>
+                                                    )}
+                                                    {record.performed_by && (
+                                                        <span className="flex items-center gap-1">
+                                                            <User size={12} />
+                                                            {record.performed_by}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => handleEditMaintenance(record)}
+                                                    className="p-1.5 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded transition-colors"
+                                                    title="Edit"
+                                                >
+                                                    <Edit size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteMaintenance(record.id)}
+                                                    className="p-1.5 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 rounded transition-colors"
+                                                    title="Delete"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
+                                <Wrench className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                                <p className="text-gray-500 dark:text-gray-400 text-sm">No maintenance records found.</p>
+                                <button
+                                    onClick={() => {
+                                        setSelectedMaintenance(null);
+                                        setShowMaintenanceForm(true);
+                                    }}
+                                    className="mt-2 text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline"
+                                >
+                                    Add first record
+                                </button>
+                            </div>
+                        )}
+                    </div>
 
                     {/* Assigned Licenses */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
@@ -465,6 +591,16 @@ const AssetDetail = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Maintenance Form Modal */}
+            {showMaintenanceForm && (
+                <MaintenanceForm
+                    assetId={id}
+                    maintenance={selectedMaintenance}
+                    onClose={() => setShowMaintenanceForm(false)}
+                    onSave={fetchMaintenances}
+                />
+            )}
         </div>
     );
 };

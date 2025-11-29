@@ -28,17 +28,19 @@ router.post('/', upload.single('image'), (req, res) => {
     // Initial available_quantity equals total_quantity
     const available_quantity = total_quantity;
     const image_url = req.file ? `/uploads/${req.file.filename}` : null;
+    const formattedDate = (!purchase_date || purchase_date === 'null' || purchase_date === 'undefined' || purchase_date === '') ? null : purchase_date;
 
     const sql = 'INSERT INTO asset_accessories (name, category, manufacturer, model_number, total_quantity, available_quantity, purchase_date, cost, notes, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-    db.query(sql, [name, category, manufacturer, model_number, total_quantity, available_quantity, purchase_date, cost, notes, image_url], (err, result) => {
+    db.query(sql, [name, category, manufacturer, model_number, total_quantity, available_quantity, formattedDate, cost, notes, image_url], (err, result) => {
         if (err) return res.status(500).json(err);
-        res.status(201).json({ id: result.insertId, ...req.body, available_quantity, image_url });
+        res.status(201).json({ id: result.insertId, ...req.body, available_quantity, image_url, purchase_date: formattedDate });
     });
 });
 
 // Update accessory
 router.put('/:id', upload.single('image'), (req, res) => {
     const { name, category, manufacturer, model_number, total_quantity, purchase_date, cost, notes } = req.body;
+    const formattedDate = (!purchase_date || purchase_date === 'null' || purchase_date === 'undefined' || purchase_date === '') ? null : purchase_date;
 
     // We need to handle quantity changes carefully. 
     // For simplicity, if total_quantity changes, we adjust available_quantity by the difference.
@@ -60,13 +62,13 @@ router.put('/:id', upload.single('image'), (req, res) => {
         if (req.file) {
             const image_url = `/uploads/${req.file.filename}`;
             const sql = 'UPDATE asset_accessories SET name = ?, category = ?, manufacturer = ?, model_number = ?, total_quantity = ?, available_quantity = ?, purchase_date = ?, cost = ?, notes = ?, image_url = ? WHERE id = ?';
-            db.query(sql, [name, category, manufacturer, model_number, total_quantity, newAvailable, purchase_date, cost, notes, image_url, req.params.id], (err, result) => {
+            db.query(sql, [name, category, manufacturer, model_number, total_quantity, newAvailable, formattedDate, cost, notes, image_url, req.params.id], (err, result) => {
                 if (err) return res.status(500).json(err);
                 res.json({ message: 'Accessory updated successfully' });
             });
         } else {
             const sql = 'UPDATE asset_accessories SET name = ?, category = ?, manufacturer = ?, model_number = ?, total_quantity = ?, available_quantity = ?, purchase_date = ?, cost = ?, notes = ? WHERE id = ?';
-            db.query(sql, [name, category, manufacturer, model_number, total_quantity, newAvailable, purchase_date, cost, notes, req.params.id], (err, result) => {
+            db.query(sql, [name, category, manufacturer, model_number, total_quantity, newAvailable, formattedDate, cost, notes, req.params.id], (err, result) => {
                 if (err) return res.status(500).json(err);
                 res.json({ message: 'Accessory updated successfully' });
             });

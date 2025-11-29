@@ -26,29 +26,31 @@ router.get('/:id', (req, res) => {
 router.post('/', upload.single('image'), (req, res) => {
     const { name, category, status, serial_number, purchase_date } = req.body;
     const image_url = req.file ? `/uploads/${req.file.filename}` : null;
+    const formattedDate = (!purchase_date || purchase_date === 'null' || purchase_date === 'undefined' || purchase_date === '') ? null : purchase_date;
 
     const sql = 'INSERT INTO asset_items (name, category, status, serial_number, purchase_date, image_url) VALUES (?, ?, ?, ?, ?, ?)';
-    db.query(sql, [name, category, status, serial_number, purchase_date, image_url], (err, result) => {
+    db.query(sql, [name, category, status, serial_number, formattedDate, image_url], (err, result) => {
         if (err) return res.status(500).json(err);
-        res.status(201).json({ id: result.insertId, ...req.body, image_url });
+        res.status(201).json({ id: result.insertId, ...req.body, image_url, purchase_date: formattedDate });
     });
 });
 
 // Update asset with optional image upload
 router.put('/:id', upload.single('image'), (req, res) => {
     const { name, category, status, serial_number, purchase_date } = req.body;
+    const formattedDate = (!purchase_date || purchase_date === 'null' || purchase_date === 'undefined' || purchase_date === '') ? null : purchase_date;
 
     // If new image uploaded, use it; otherwise keep existing
     if (req.file) {
         const image_url = `/uploads/${req.file.filename}`;
         const sql = 'UPDATE asset_items SET name = ?, category = ?, status = ?, serial_number = ?, purchase_date = ?, image_url = ? WHERE id = ?';
-        db.query(sql, [name, category, status, serial_number, purchase_date, image_url, req.params.id], (err, result) => {
+        db.query(sql, [name, category, status, serial_number, formattedDate, image_url, req.params.id], (err, result) => {
             if (err) return res.status(500).json(err);
             res.json({ message: 'Asset updated successfully' });
         });
     } else {
-        const sql = 'UPDATE asset_items SET name = ?, category = ?, status = ?, serial_number, purchase_date = ? WHERE id = ?';
-        db.query(sql, [name, category, status, serial_number, purchase_date, req.params.id], (err, result) => {
+        const sql = 'UPDATE asset_items SET name = ?, category = ?, status = ?, serial_number = ?, purchase_date = ? WHERE id = ?';
+        db.query(sql, [name, category, status, serial_number, formattedDate, req.params.id], (err, result) => {
             if (err) return res.status(500).json(err);
             res.json({ message: 'Asset updated successfully' });
         });
@@ -132,7 +134,7 @@ router.get('/:id/licenses', (req, res) => {
         const sql = `
             SELECT la.*, l.software_name, l.product_key, l.expiration_date
             FROM asset_license_assignments la
-            JOIN licenses l ON la.license_id = l.id
+            JOIN asset_licenses l ON la.license_id = l.id
             WHERE la.assigned_to = ? AND la.assigned_type = 'asset' AND la.returned_at IS NULL
             ORDER BY la.assigned_at DESC
         `;
@@ -160,7 +162,7 @@ router.get('/:id/accessories', (req, res) => {
         const sql = `
             SELECT aa.*, a.name as accessory_name, a.category, a.model_number
             FROM asset_accessory_assignments aa
-            JOIN accessories a ON aa.accessory_id = a.id
+            JOIN asset_accessories a ON aa.accessory_id = a.id
             WHERE aa.assigned_to = ? AND aa.assigned_type = 'asset' AND aa.returned_at IS NULL
             ORDER BY aa.assigned_at DESC
         `;
@@ -188,7 +190,7 @@ router.get('/:id/components', (req, res) => {
         const sql = `
             SELECT ca.*, c.name as component_name, c.category, c.model_number
             FROM asset_component_assignments ca
-            JOIN components c ON ca.component_id = c.id
+            JOIN asset_components c ON ca.component_id = c.id
             WHERE ca.assigned_to = ?
             ORDER BY ca.assigned_at DESC
         `;
@@ -216,7 +218,7 @@ router.get('/:id/accounts', (req, res) => {
         const sql = `
             SELECT aa.*, a.account_type, a.account_name, a.username
             FROM asset_account_assignments aa
-            JOIN accounts a ON aa.account_id = a.id
+            JOIN asset_accounts a ON aa.account_id = a.id
             WHERE aa.assigned_to = ? AND aa.assigned_type = 'asset'
             ORDER BY aa.assigned_at DESC
         `;
@@ -225,6 +227,68 @@ router.get('/:id/accounts', (req, res) => {
             if (err) return res.status(500).json(err);
             res.json(results);
         });
+    });
+});
+
+// Get maintenance history for an asset
+router.get('/:id/maintenance', (req, res) => {
+    const assetId = req.params.id;
+    const sql = 'SELECT * FROM asset_maintenances WHERE asset_id = ? ORDER BY start_date DESC';
+
+    db.query(sql, [assetId], (err, results) => {
+        if (err) return res.status(500).json(err);
+        res.json(results);
+    });
+});
+
+// Add maintenance record
+router.post('/:id/maintenance', (req, res) => {
+    const assetId = req.params.id;
+    const { maintenance_type, title, description, start_date, completion_date, cost, status, performed_by } = req.body;
+
+    const formattedStartDate = (!start_date || start_date === 'null' || start_date === 'undefined' || start_date === '') ? null : start_date;
+    const formattedCompletionDate = (!completion_date || completion_date === 'null' || completion_date === 'undefined' || completion_date === '') ? null : completion_date;
+
+    const sql = `
+        INSERT INTO asset_maintenances 
+        (asset_id, maintenance_type, title, description, start_date, completion_date, cost, status, performed_by) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    db.query(sql, [assetId, maintenance_type, title, description, formattedStartDate, formattedCompletionDate, cost, status, performed_by], (err, result) => {
+        if (err) return res.status(500).json(err);
+        res.status(201).json({ id: result.insertId, message: 'Maintenance record added successfully' });
+    });
+});
+
+// Update maintenance record
+router.put('/:id/maintenance/:maintenanceId', (req, res) => {
+    const maintenanceId = req.params.maintenanceId;
+    const { maintenance_type, title, description, start_date, completion_date, cost, status, performed_by } = req.body;
+
+    const formattedStartDate = (!start_date || start_date === 'null' || start_date === 'undefined' || start_date === '') ? null : start_date;
+    const formattedCompletionDate = (!completion_date || completion_date === 'null' || completion_date === 'undefined' || completion_date === '') ? null : completion_date;
+
+    const sql = `
+        UPDATE asset_maintenances 
+        SET maintenance_type = ?, title = ?, description = ?, start_date = ?, completion_date = ?, cost = ?, status = ?, performed_by = ?
+        WHERE id = ?
+    `;
+
+    db.query(sql, [maintenance_type, title, description, formattedStartDate, formattedCompletionDate, cost, status, performed_by, maintenanceId], (err, result) => {
+        if (err) return res.status(500).json(err);
+        res.json({ message: 'Maintenance record updated successfully' });
+    });
+});
+
+// Delete maintenance record
+router.delete('/:id/maintenance/:maintenanceId', (req, res) => {
+    const maintenanceId = req.params.maintenanceId;
+    const sql = 'DELETE FROM asset_maintenances WHERE id = ?';
+
+    db.query(sql, [maintenanceId], (err, result) => {
+        if (err) return res.status(500).json(err);
+        res.json({ message: 'Maintenance record deleted successfully' });
     });
 });
 

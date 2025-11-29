@@ -21,31 +21,46 @@ exports.getAssetById = (req, res) => {
 
 // Create asset
 exports.createAsset = (req, res) => {
+    console.log('Create Asset Request Body:', req.body);
     const { name, category, status, serial_number, purchase_date } = req.body;
     const image_url = req.file ? `/uploads/${req.file.filename}` : null;
+    const formattedDate = (!purchase_date || purchase_date === 'null' || purchase_date === 'undefined' || purchase_date === '') ? null : purchase_date;
 
     const sql = 'INSERT INTO asset_items (name, category, status, serial_number, purchase_date, image_url) VALUES (?, ?, ?, ?, ?, ?)';
-    db.query(sql, [name, category, status, serial_number, purchase_date, image_url], (err, result) => {
-        if (err) return res.status(500).json(err);
-        res.status(201).json({ id: result.insertId, ...req.body, image_url });
+    db.query(sql, [name, category, status, serial_number, formattedDate, image_url], (err, result) => {
+        if (err) {
+            console.error('Database Error in createAsset:', err);
+            return res.status(500).json({ message: 'Database error', error: err });
+        }
+        res.status(201).json({ id: result.insertId, ...req.body, purchase_date: formattedDate, image_url });
     });
 };
 
 // Update asset
 exports.updateAsset = (req, res) => {
+    console.log('Update Asset Request Body:', req.body);
+    console.log('Update Asset File:', req.file);
+
     const { name, category, status, serial_number, purchase_date } = req.body;
+    const formattedDate = (!purchase_date || purchase_date === 'null' || purchase_date === 'undefined' || purchase_date === '') ? null : purchase_date;
 
     if (req.file) {
         const image_url = `/uploads/${req.file.filename}`;
         const sql = 'UPDATE asset_items SET name = ?, category = ?, status = ?, serial_number = ?, purchase_date = ?, image_url = ? WHERE id = ?';
-        db.query(sql, [name, category, status, serial_number, purchase_date, image_url, req.params.id], (err, result) => {
-            if (err) return res.status(500).json(err);
+        db.query(sql, [name, category, status, serial_number, formattedDate, image_url, req.params.id], (err, result) => {
+            if (err) {
+                console.error('Database Error in updateAsset (with file):', err);
+                return res.status(500).json({ message: 'Database error', error: err });
+            }
             res.json({ message: 'Asset updated successfully' });
         });
     } else {
         const sql = 'UPDATE asset_items SET name = ?, category = ?, status = ?, serial_number = ?, purchase_date = ? WHERE id = ?';
-        db.query(sql, [name, category, status, serial_number, purchase_date, req.params.id], (err, result) => {
-            if (err) return res.status(500).json(err);
+        db.query(sql, [name, category, status, serial_number, formattedDate, req.params.id], (err, result) => {
+            if (err) {
+                console.error('Database Error in updateAsset (no file):', err);
+                return res.status(500).json({ message: 'Database error', error: err });
+            }
             res.json({ message: 'Asset updated successfully' });
         });
     }
@@ -218,13 +233,16 @@ exports.addMaintenance = (req, res) => {
     const assetId = req.params.id;
     const { maintenance_type, title, description, start_date, completion_date, cost, status, performed_by } = req.body;
 
+    const formattedStartDate = start_date === '' ? null : start_date;
+    const formattedCompletionDate = completion_date === '' ? null : completion_date;
+
     const sql = `
         INSERT INTO asset_maintenances 
         (asset_id, maintenance_type, title, description, start_date, completion_date, cost, status, performed_by) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    db.query(sql, [assetId, maintenance_type, title, description, start_date, completion_date, cost, status, performed_by], (err, result) => {
+    db.query(sql, [assetId, maintenance_type, title, description, formattedStartDate, formattedCompletionDate, cost, status, performed_by], (err, result) => {
         if (err) return res.status(500).json(err);
         res.status(201).json({ id: result.insertId, message: 'Maintenance record added successfully' });
     });
@@ -246,13 +264,16 @@ exports.updateMaintenance = (req, res) => {
     const maintenanceId = req.params.maintenanceId;
     const { maintenance_type, title, description, start_date, completion_date, cost, status, performed_by } = req.body;
 
+    const formattedStartDate = start_date === '' ? null : start_date;
+    const formattedCompletionDate = completion_date === '' ? null : completion_date;
+
     const sql = `
         UPDATE asset_maintenances 
         SET maintenance_type = ?, title = ?, description = ?, start_date = ?, completion_date = ?, cost = ?, status = ?, performed_by = ?
         WHERE id = ?
     `;
 
-    db.query(sql, [maintenance_type, title, description, start_date, completion_date, cost, status, performed_by, maintenanceId], (err, result) => {
+    db.query(sql, [maintenance_type, title, description, formattedStartDate, formattedCompletionDate, cost, status, performed_by, maintenanceId], (err, result) => {
         if (err) return res.status(500).json(err);
         res.json({ message: 'Maintenance record updated successfully' });
     });

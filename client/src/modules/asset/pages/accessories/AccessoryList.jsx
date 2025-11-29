@@ -24,6 +24,8 @@ const AccessoryList = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedAccessories, setSelectedAccessories] = useState([]);
     const [showBulkPrintModal, setShowBulkPrintModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [accessoryToDelete, setAccessoryToDelete] = useState(null);
 
     useEffect(() => {
         fetchAccessories();
@@ -70,14 +72,24 @@ const AccessoryList = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this accessory?')) {
-            try {
-                await axios.delete(`http://localhost:5000/api/accessories/${id}`);
-                setAccessories(accessories.filter((acc) => acc.id !== id));
-            } catch (error) {
-                console.error('Error deleting accessory:', error);
-            }
+    const handleDelete = (id) => {
+        setAccessoryToDelete(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!accessoryToDelete) return;
+
+        try {
+            await axios.delete(`http://localhost:5000/api/accessories/${accessoryToDelete}`);
+            setAccessories(accessories.filter((acc) => acc.id !== accessoryToDelete));
+            alert('Accessory deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting accessory:', error);
+            alert(error.response?.data?.message || 'Error deleting accessory. Please try again.');
+        } finally {
+            setShowDeleteModal(false);
+            setAccessoryToDelete(null);
         }
     };
 
@@ -563,6 +575,37 @@ const AccessoryList = () => {
                                     Download
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
+                            Confirm Delete
+                        </h3>
+                        <p className="text-gray-600 dark:text-gray-300 mb-6">
+                            Are you sure you want to delete this accessory? This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end space-x-3">
+                            <button
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setAccessoryToDelete(null);
+                                }}
+                                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                            >
+                                Delete
+                            </button>
                         </div>
                     </div>
                 </div>

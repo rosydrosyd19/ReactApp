@@ -34,18 +34,26 @@ router.get('/:id', (req, res) => {
 // Create license
 router.post('/', (req, res) => {
     const { software_name, product_key, seats, purchase_date, expiration_date, notes } = req.body;
+
+    const formattedPurchaseDate = (!purchase_date || purchase_date === 'null' || purchase_date === 'undefined' || purchase_date === '') ? null : purchase_date;
+    const formattedExpirationDate = (!expiration_date || expiration_date === 'null' || expiration_date === 'undefined' || expiration_date === '') ? null : expiration_date;
+
     const sql = 'INSERT INTO asset_licenses (software_name, product_key, seats, purchase_date, expiration_date, notes) VALUES (?, ?, ?, ?, ?, ?)';
-    db.query(sql, [software_name, product_key, seats, purchase_date, expiration_date, notes], (err, result) => {
+    db.query(sql, [software_name, product_key, seats, formattedPurchaseDate, formattedExpirationDate, notes], (err, result) => {
         if (err) return res.status(500).json(err);
-        res.status(201).json({ id: result.insertId, ...req.body });
+        res.status(201).json({ id: result.insertId, ...req.body, purchase_date: formattedPurchaseDate, expiration_date: formattedExpirationDate });
     });
 });
 
 // Update license
 router.put('/:id', (req, res) => {
     const { software_name, product_key, seats, purchase_date, expiration_date, notes } = req.body;
+
+    const formattedPurchaseDate = (!purchase_date || purchase_date === 'null' || purchase_date === 'undefined' || purchase_date === '') ? null : purchase_date;
+    const formattedExpirationDate = (!expiration_date || expiration_date === 'null' || expiration_date === 'undefined' || expiration_date === '') ? null : expiration_date;
+
     const sql = 'UPDATE asset_licenses SET software_name = ?, product_key = ?, seats = ?, purchase_date = ?, expiration_date = ?, notes = ? WHERE id = ?';
-    db.query(sql, [software_name, product_key, seats, purchase_date, expiration_date, notes, req.params.id], (err, result) => {
+    db.query(sql, [software_name, product_key, seats, formattedPurchaseDate, formattedExpirationDate, notes, req.params.id], (err, result) => {
         if (err) return res.status(500).json(err);
         res.json({ message: 'License updated successfully' });
     });
@@ -116,7 +124,7 @@ router.get('/:id/accounts', (req, res) => {
     const sql = `
         SELECT aa.*, a.account_type, a.account_name, a.username
         FROM asset_account_assignments aa
-        JOIN accounts a ON aa.account_id = a.id
+        JOIN asset_accounts a ON aa.account_id = a.id
         WHERE aa.assigned_to = ? AND aa.assigned_type = 'license'
         ORDER BY aa.assigned_at DESC
     `;

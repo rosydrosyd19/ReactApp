@@ -21,8 +21,8 @@ router.get('/:id', (req, res) => {
                    WHEN aa.assigned_type = 'license' THEN l.software_name
                END as assigned_name
         FROM asset_account_assignments aa
-        LEFT JOIN assets a ON aa.assigned_to = a.name AND aa.assigned_type = 'asset'
-        LEFT JOIN licenses l ON aa.assigned_to = l.id AND aa.assigned_type = 'license'
+        LEFT JOIN asset_items a ON aa.assigned_to = a.name AND aa.assigned_type = 'asset'
+        LEFT JOIN asset_licenses l ON aa.assigned_to = l.id AND aa.assigned_type = 'license'
         WHERE aa.account_id = ?
         ORDER BY aa.assigned_at DESC
     `;

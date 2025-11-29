@@ -16,6 +16,8 @@ const Licenses = () => {
     const [users, setUsers] = useState([]);
     const [assets, setAssets] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [licenseToDelete, setLicenseToDelete] = useState(null);
 
     useEffect(() => {
         fetchLicenses();
@@ -52,14 +54,24 @@ const Licenses = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this license?')) {
-            try {
-                await axios.delete(`http://localhost:5000/api/licenses/${id}`);
-                setLicenses(licenses.filter((license) => license.id !== id));
-            } catch (error) {
-                console.error('Error deleting license:', error);
-            }
+    const handleDelete = (id) => {
+        setLicenseToDelete(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!licenseToDelete) return;
+
+        try {
+            await axios.delete(`http://localhost:5000/api/licenses/${licenseToDelete}`);
+            setLicenses(licenses.filter((license) => license.id !== licenseToDelete));
+            alert('License deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting license:', error);
+            alert(error.response?.data?.message || 'Error deleting license. Please try again.');
+        } finally {
+            setShowDeleteModal(false);
+            setLicenseToDelete(null);
         }
     };
 
@@ -366,6 +378,37 @@ const Licenses = () => {
                                 className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Assign Seat
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
+                            Confirm Delete
+                        </h3>
+                        <p className="text-gray-600 dark:text-gray-300 mb-6">
+                            Are you sure you want to delete this license? This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end space-x-3">
+                            <button
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setLicenseToDelete(null);
+                                }}
+                                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                            >
+                                Delete
                             </button>
                         </div>
                     </div>

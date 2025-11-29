@@ -7,6 +7,8 @@ const LocationList = () => {
     const [locations, setLocations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [locationToDelete, setLocationToDelete] = useState(null);
 
     useEffect(() => {
         fetchLocations();
@@ -23,14 +25,24 @@ const LocationList = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this location?')) {
-            try {
-                await axios.delete(`http://localhost:5000/api/locations/${id}`);
-                setLocations(locations.filter((location) => location.id !== id));
-            } catch (error) {
-                console.error('Error deleting location:', error);
-            }
+    const handleDelete = (id) => {
+        setLocationToDelete(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!locationToDelete) return;
+
+        try {
+            await axios.delete(`http://localhost:5000/api/locations/${locationToDelete}`);
+            setLocations(locations.filter((location) => location.id !== locationToDelete));
+            alert('Location deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting location:', error);
+            alert(error.response?.data?.message || 'Error deleting location. Please try again.');
+        } finally {
+            setShowDeleteModal(false);
+            setLocationToDelete(null);
         }
     };
 
@@ -165,6 +177,37 @@ const LocationList = () => {
                     </div>
                 ))}
             </div>
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
+                            Confirm Delete
+                        </h3>
+                        <p className="text-gray-600 dark:text-gray-300 mb-6">
+                            Are you sure you want to delete this location? This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end space-x-3">
+                            <button
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setLocationToDelete(null);
+                                }}
+                                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
