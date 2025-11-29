@@ -9,6 +9,7 @@ const ComponentDetail = () => {
     const navigate = useNavigate();
     const [component, setComponent] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         fetchComponent();
@@ -16,10 +17,13 @@ const ComponentDetail = () => {
 
     const fetchComponent = async () => {
         try {
+            setLoading(true);
             const res = await axios.get(`http://localhost:5000/api/components/${id}`);
             setComponent(res.data);
+            setError(null);
         } catch (error) {
             console.error('Error fetching component:', error);
+            setError(error.response?.data?.message || 'Error fetching component details');
         } finally {
             setLoading(false);
         }
@@ -34,11 +38,13 @@ const ComponentDetail = () => {
                 fetchComponent();
             } catch (error) {
                 console.error('Error checking in component:', error);
+                alert(error.response?.data?.message || 'Error checking in component');
             }
         }
     };
 
     if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>;
+    if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
     if (!component) return <div className="p-8 text-center text-gray-500">Component not found</div>;
 
     return (

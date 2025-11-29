@@ -18,6 +18,8 @@ const AssetDetail = () => {
     const [loading, setLoading] = useState(true);
     const [showMaintenanceForm, setShowMaintenanceForm] = useState(false);
     const [selectedMaintenance, setSelectedMaintenance] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [maintenanceToDelete, setMaintenanceToDelete] = useState(null);
 
     useEffect(() => {
         fetchAsset();
@@ -99,15 +101,24 @@ const AssetDetail = () => {
         setShowMaintenanceForm(true);
     };
 
-    const handleDeleteMaintenance = async (maintenanceId) => {
-        if (window.confirm('Are you sure you want to delete this maintenance record?')) {
-            try {
-                await axios.delete(`http://localhost:5000/api/assets/maintenance/${maintenanceId}`);
-                fetchMaintenances();
-            } catch (error) {
-                console.error('Error deleting maintenance:', error);
-                alert('Failed to delete maintenance record');
-            }
+    const handleDeleteMaintenance = (maintenanceId) => {
+        setMaintenanceToDelete(maintenanceId);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!maintenanceToDelete) return;
+
+        try {
+            await axios.delete(`http://localhost:5000/api/assets/${id}/maintenance/${maintenanceToDelete}`);
+            fetchMaintenances();
+            // alert('Maintenance record deleted successfully'); // Optional: show success message
+        } catch (error) {
+            console.error('Error deleting maintenance:', error);
+            alert('Failed to delete maintenance record');
+        } finally {
+            setShowDeleteModal(false);
+            setMaintenanceToDelete(null);
         }
     };
 
@@ -254,9 +265,9 @@ const AssetDetail = () => {
                                             <div>
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <span className={`px-2 py-0.5 rounded text-xs font-medium ${record.status === 'Completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                                                            record.status === 'In Progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                                                                record.status === 'Scheduled' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                                                    'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
+                                                        record.status === 'In Progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                                            record.status === 'Scheduled' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                                                'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
                                                         }`}>
                                                         {record.status}
                                                     </span>
@@ -600,6 +611,37 @@ const AssetDetail = () => {
                     onClose={() => setShowMaintenanceForm(false)}
                     onSave={fetchMaintenances}
                 />
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+                        <div className="p-6 text-center">
+                            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Trash2 className="text-red-600 dark:text-red-400" size={24} />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Delete Maintenance Record</h3>
+                            <p className="text-gray-500 dark:text-gray-400 mb-6">
+                                Are you sure you want to delete this maintenance record? This action cannot be undone.
+                            </p>
+                            <div className="flex justify-center gap-3">
+                                <button
+                                    onClick={() => setShowDeleteModal(false)}
+                                    className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                                >
+                                    Delete Record
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

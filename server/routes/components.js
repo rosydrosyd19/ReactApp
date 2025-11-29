@@ -36,7 +36,7 @@ router.get('/:id', (req, res) => {
     const assignmentsQuery = `
         SELECT ca.*, a.name as asset_name, a.serial_number
         FROM asset_component_assignments ca
-        LEFT JOIN assets a ON ca.assigned_to = a.name
+        LEFT JOIN asset_items a ON ca.assigned_to = a.name
         WHERE ca.component_id = ?
         ORDER BY ca.assigned_at DESC
     `;

@@ -27,7 +27,7 @@ const MaintenanceForm = ({ assetId, maintenance, onClose, onSave }) => {
 
         try {
             if (maintenance) {
-                await axios.put(`http://localhost:5000/api/assets/maintenance/${maintenance.id}`, formData);
+                await axios.put(`http://localhost:5000/api/assets/${assetId}/maintenance/${maintenance.id}`, formData);
             } else {
                 await axios.post(`http://localhost:5000/api/assets/${assetId}/maintenance`, formData);
             }
@@ -43,7 +43,7 @@ const MaintenanceForm = ({ assetId, maintenance, onClose, onSave }) => {
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-2xl overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh]">
                 <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <Wrench className="text-blue-600" />
@@ -54,7 +54,7 @@ const MaintenanceForm = ({ assetId, maintenance, onClose, onSave }) => {
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto flex-1">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
