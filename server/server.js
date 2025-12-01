@@ -30,6 +30,8 @@ app.use('/api/licenses', licensesRouter);
 app.use('/api/accessories', accessoriesRouter);
 app.use('/api/components', componentsRouter);
 app.use('/api/accounts', accountsRouter);
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/sysadmin', require('./routes/sysadmin'));
 
 app.get('/api/dashboard', (req, res) => {
     const queries = {

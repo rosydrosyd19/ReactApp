@@ -367,3 +367,6 @@ For questions or support, please open an issue on GitHub.
 
 
 ---do it ----
+perbaiki error ketika klik menu Edit Role
+
+sempurnakan menu Permission Registry dan perbaiki error di menu ini --
