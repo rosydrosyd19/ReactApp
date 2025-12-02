@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [currentModule, setCurrentModule] = useState(null);
     const [accessibleModules, setAccessibleModules] = useState([]);
+    const [accessiblePermissions, setAccessiblePermissions] = useState([]);
 
     useEffect(() => {
         // Check for token in localStorage or sessionStorage
@@ -18,6 +19,7 @@ export const AuthProvider = ({ children }) => {
             const parsedUser = JSON.parse(savedUser);
             setUser(parsedUser);
             setAccessibleModules(parsedUser.modules || []);
+            setAccessiblePermissions(parsedUser.permissions ? parsedUser.permissions.map(p => p.name) : []);
 
             if (savedModule) {
                 setCurrentModule(JSON.parse(savedModule));
@@ -32,6 +34,7 @@ export const AuthProvider = ({ children }) => {
     const login = (userData, token, rememberMe) => {
         setUser(userData);
         setAccessibleModules(userData.modules || []);
+        setAccessiblePermissions(userData.permissions ? userData.permissions.map(p => p.name) : []);
 
         // If only one module, select it automatically
         let moduleToSelect = null;
@@ -63,6 +66,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setCurrentModule(null);
         setAccessibleModules([]);
+        setAccessiblePermissions([]);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('currentModule');
@@ -71,8 +75,13 @@ export const AuthProvider = ({ children }) => {
         sessionStorage.removeItem('currentModule');
     };
 
+    const hasPermission = (permName) => {
+        if (!accessiblePermissions || accessiblePermissions.length === 0) return false;
+        return accessiblePermissions.includes(permName);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading, currentModule, accessibleModules, selectModule }}>
+        <AuthContext.Provider value={{ user, login, logout, loading, currentModule, accessibleModules, accessiblePermissions, hasPermission, selectModule }}>
             {!loading && children}
         </AuthContext.Provider>
     );

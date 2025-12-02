@@ -4,8 +4,10 @@ import { Link } from 'react-router-dom';
 import { Edit, Trash2, Package, Eye, LogOut, Search, QrCode, X, Printer } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import BulkQRPrintModal from '../../components/BulkQRPrintModal';
+import { useAuth } from '../../../core/context/AuthContext';
 
 const ComponentList = () => {
+    const { hasPermission } = useAuth();
     const [components, setComponents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCheckoutModal, setShowCheckoutModal] = useState(false);
@@ -149,12 +151,14 @@ const ComponentList = () => {
                             Print QR ({selectedComponents.length})
                         </button>
                     )}
-                    <Link
-                        to="/components/create"
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-                    >
-                        + Add
-                    </Link>
+                    {hasPermission('components.create') && (
+                        <Link
+                            to="/components/create"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                        >
+                            + Add
+                        </Link>
+                    )}
                 </div>
             </div>
 
@@ -242,7 +246,7 @@ const ComponentList = () => {
                                         </td>
                                         <td className="p-4">
                                             <div className="flex space-x-2">
-                                                {comp.available_quantity > 0 && (
+                                                {comp.available_quantity > 0 && hasPermission('components.update') && (
                                                     <button
                                                         onClick={() => handleCheckout(comp)}
                                                         className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
@@ -258,25 +262,31 @@ const ComponentList = () => {
                                                 >
                                                     <QrCode size={18} />
                                                 </button>
-                                                <Link
-                                                    to={`/components/detail/${comp.id}`}
-                                                    className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                                                    title="View Details"
-                                                >
-                                                    <Eye size={18} />
-                                                </Link>
-                                                <Link
-                                                    to={`/components/edit/${comp.id}`}
-                                                    className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                                >
-                                                    <Edit size={18} />
-                                                </Link>
-                                                <button
-                                                    onClick={() => handleDelete(comp.id)}
-                                                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
+                                                {hasPermission('components.read') && (
+                                                    <Link
+                                                        to={`/components/detail/${comp.id}`}
+                                                        className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                                        title="View Details"
+                                                    >
+                                                        <Eye size={18} />
+                                                    </Link>
+                                                )}
+                                                {hasPermission('components.update') && (
+                                                    <Link
+                                                        to={`/components/edit/${comp.id}`}
+                                                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                    >
+                                                        <Edit size={18} />
+                                                    </Link>
+                                                )}
+                                                {hasPermission('components.delete') && (
+                                                    <button
+                                                        onClick={() => handleDelete(comp.id)}
+                                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -336,7 +346,7 @@ const ComponentList = () => {
                             </div>
                             <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 flex justify-end items-center">
                                 <div className="flex space-x-2">
-                                    {comp.available_quantity > 0 && (
+                                    {comp.available_quantity > 0 && hasPermission('components.update') && (
                                         <button
                                             onClick={() => handleCheckout(comp)}
                                             className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
@@ -350,24 +360,30 @@ const ComponentList = () => {
                                     >
                                         <QrCode size={18} />
                                     </button>
-                                    <Link
-                                        to={`/components/detail/${comp.id}`}
-                                        className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                                    >
-                                        <Eye size={18} />
-                                    </Link>
-                                    <Link
-                                        to={`/components/edit/${comp.id}`}
-                                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                    >
-                                        <Edit size={18} />
-                                    </Link>
-                                    <button
-                                        onClick={() => handleDelete(comp.id)}
-                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
+                                    {hasPermission('components.read') && (
+                                        <Link
+                                            to={`/components/detail/${comp.id}`}
+                                            className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                        >
+                                            <Eye size={18} />
+                                        </Link>
+                                    )}
+                                    {hasPermission('components.update') && (
+                                        <Link
+                                            to={`/components/edit/${comp.id}`}
+                                            className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                        >
+                                            <Edit size={18} />
+                                        </Link>
+                                    )}
+                                    {hasPermission('components.delete') && (
+                                        <button
+                                            onClick={() => handleDelete(comp.id)}
+                                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Edit, Trash2, FileText, Eye, LogOut, LogIn, Search } from 'lucide-react';
+import { useAuth } from '../../../core/context/AuthContext';
 
 const Licenses = () => {
+    const { hasPermission } = useAuth();
     const [licenses, setLicenses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCheckoutModal, setShowCheckoutModal] = useState(false);
@@ -121,12 +123,14 @@ const Licenses = () => {
         <div className="space-y-6">
             <div className="flex flex-row justify-between items-center gap-4 mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Licenses</h2>
-                <Link
-                    to="/licenses/create"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                    + Add
-                </Link>
+                {hasPermission('licenses.create') && (
+                    <Link
+                        to="/licenses/create"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                        + Add
+                    </Link>
+                )}
             </div>
 
             {/* Search Bar */}
@@ -186,7 +190,7 @@ const Licenses = () => {
                                         </td>
                                         <td className="p-4">
                                             <div className="flex space-x-2">
-                                                {license.available_seats > 0 && (
+                                                {license.available_seats > 0 && hasPermission('licenses.update') && (
                                                     <button
                                                         onClick={() => handleCheckout(license)}
                                                         className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
@@ -195,25 +199,31 @@ const Licenses = () => {
                                                         <LogOut size={18} />
                                                     </button>
                                                 )}
-                                                <Link
-                                                    to={`/licenses/detail/${license.id}`}
-                                                    className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                                                    title="View Details"
-                                                >
-                                                    <Eye size={18} />
-                                                </Link>
-                                                <Link
-                                                    to={`/licenses/edit/${license.id}`}
-                                                    className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                                >
-                                                    <Edit size={18} />
-                                                </Link>
-                                                <button
-                                                    onClick={() => handleDelete(license.id)}
-                                                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
+                                                {hasPermission('licenses.read') && (
+                                                    <Link
+                                                        to={`/licenses/detail/${license.id}`}
+                                                        className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                                        title="View Details"
+                                                    >
+                                                        <Eye size={18} />
+                                                    </Link>
+                                                )}
+                                                {hasPermission('licenses.update') && (
+                                                    <Link
+                                                        to={`/licenses/edit/${license.id}`}
+                                                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                    >
+                                                        <Edit size={18} />
+                                                    </Link>
+                                                )}
+                                                {hasPermission('licenses.delete') && (
+                                                    <button
+                                                        onClick={() => handleDelete(license.id)}
+                                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -262,7 +272,7 @@ const Licenses = () => {
                             </div>
                             <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 flex justify-end items-center">
                                 <div className="flex space-x-2">
-                                    {license.available_seats > 0 && (
+                                    {license.available_seats > 0 && hasPermission('licenses.update') && (
                                         <button
                                             onClick={() => handleCheckout(license)}
                                             className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
@@ -270,24 +280,30 @@ const Licenses = () => {
                                             <LogOut size={18} />
                                         </button>
                                     )}
-                                    <Link
-                                        to={`/licenses/detail/${license.id}`}
-                                        className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                                    >
-                                        <Eye size={18} />
-                                    </Link>
-                                    <Link
-                                        to={`/licenses/edit/${license.id}`}
-                                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                    >
-                                        <Edit size={18} />
-                                    </Link>
-                                    <button
-                                        onClick={() => handleDelete(license.id)}
-                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
+                                    {hasPermission('licenses.read') && (
+                                        <Link
+                                            to={`/licenses/detail/${license.id}`}
+                                            className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                        >
+                                            <Eye size={18} />
+                                        </Link>
+                                    )}
+                                    {hasPermission('licenses.update') && (
+                                        <Link
+                                            to={`/licenses/edit/${license.id}`}
+                                            className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                        >
+                                            <Edit size={18} />
+                                        </Link>
+                                    )}
+                                    {hasPermission('licenses.delete') && (
+                                        <button
+                                            onClick={() => handleDelete(license.id)}
+                                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>

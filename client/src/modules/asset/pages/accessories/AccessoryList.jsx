@@ -4,8 +4,10 @@ import { Link } from 'react-router-dom';
 import { Edit, Trash2, Package, Eye, LogOut, LogIn, Search, QrCode, X, Printer } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import BulkQRPrintModal from '../../components/BulkQRPrintModal';
+import { useAuth } from '../../../core/context/AuthContext';
 
 const AccessoryList = () => {
+    const { hasPermission } = useAuth();
     const [accessories, setAccessories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCheckoutModal, setShowCheckoutModal] = useState(false);
@@ -187,12 +189,14 @@ const AccessoryList = () => {
                             Print QR ({selectedAccessories.length})
                         </button>
                     )}
-                    <Link
-                        to="/accessories/create"
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-                    >
-                        + Add
-                    </Link>
+                    {hasPermission('accessories.create') && (
+                        <Link
+                            to="/accessories/create"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                        >
+                            + Add
+                        </Link>
+                    )}
                 </div>
             </div>
 
@@ -280,7 +284,7 @@ const AccessoryList = () => {
                                         </td>
                                         <td className="p-4">
                                             <div className="flex space-x-2">
-                                                {acc.available_quantity > 0 && (
+                                                {acc.available_quantity > 0 && hasPermission('accessories.update') && (
                                                     <button
                                                         onClick={() => handleCheckout(acc)}
                                                         className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
@@ -296,25 +300,31 @@ const AccessoryList = () => {
                                                 >
                                                     <QrCode size={18} />
                                                 </button>
-                                                <Link
-                                                    to={`/accessories/detail/${acc.id}`}
-                                                    className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                                                    title="View Details"
-                                                >
-                                                    <Eye size={18} />
-                                                </Link>
-                                                <Link
-                                                    to={`/accessories/edit/${acc.id}`}
-                                                    className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                                >
-                                                    <Edit size={18} />
-                                                </Link>
-                                                <button
-                                                    onClick={() => handleDelete(acc.id)}
-                                                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
+                                                {hasPermission('accessories.read') && (
+                                                    <Link
+                                                        to={`/accessories/detail/${acc.id}`}
+                                                        className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                                        title="View Details"
+                                                    >
+                                                        <Eye size={18} />
+                                                    </Link>
+                                                )}
+                                                {hasPermission('accessories.update') && (
+                                                    <Link
+                                                        to={`/accessories/edit/${acc.id}`}
+                                                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                    >
+                                                        <Edit size={18} />
+                                                    </Link>
+                                                )}
+                                                {hasPermission('accessories.delete') && (
+                                                    <button
+                                                        onClick={() => handleDelete(acc.id)}
+                                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -374,7 +384,7 @@ const AccessoryList = () => {
                             </div>
                             <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 flex justify-end items-center">
                                 <div className="flex space-x-2">
-                                    {acc.available_quantity > 0 && (
+                                    {acc.available_quantity > 0 && hasPermission('accessories.update') && (
                                         <button
                                             onClick={() => handleCheckout(acc)}
                                             className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
@@ -388,24 +398,30 @@ const AccessoryList = () => {
                                     >
                                         <QrCode size={18} />
                                     </button>
-                                    <Link
-                                        to={`/accessories/detail/${acc.id}`}
-                                        className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                                    >
-                                        <Eye size={18} />
-                                    </Link>
-                                    <Link
-                                        to={`/accessories/edit/${acc.id}`}
-                                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                    >
-                                        <Edit size={18} />
-                                    </Link>
-                                    <button
-                                        onClick={() => handleDelete(acc.id)}
-                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
+                                    {hasPermission('accessories.read') && (
+                                        <Link
+                                            to={`/accessories/detail/${acc.id}`}
+                                            className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                        >
+                                            <Eye size={18} />
+                                        </Link>
+                                    )}
+                                    {hasPermission('accessories.update') && (
+                                        <Link
+                                            to={`/accessories/edit/${acc.id}`}
+                                            className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                        >
+                                            <Edit size={18} />
+                                        </Link>
+                                    )}
+                                    {hasPermission('accessories.delete') && (
+                                        <button
+                                            onClick={() => handleDelete(acc.id)}
+                                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -4,8 +4,10 @@ import { Link } from 'react-router-dom';
 import { Edit, Trash2, Plus, Search, Package, LogIn, LogOut, Eye, QrCode, X, Printer } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import BulkQRPrintModal from '../../components/BulkQRPrintModal';
+import { useAuth } from '../../../core/context/AuthContext';
 
 const AssetList = () => {
+    const { hasPermission } = useAuth();
     const [assets, setAssets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -189,12 +191,14 @@ const AssetList = () => {
                             Print QR ({selectedAssets.length})
                         </button>
                     )}
-                    <Link
-                        to="/assets/create"
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-                    >
-                        + Add
-                    </Link>
+                    {hasPermission('assets.create') && (
+                        <Link
+                            to="/assets/create"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                        >
+                            + Add
+                        </Link>
+                    )}
                 </div>
             </div>
 
@@ -278,7 +282,7 @@ const AssetList = () => {
                                     </td>
                                     <td className="p-4">
                                         <div className="flex space-x-2">
-                                            {!asset.checked_out_to ? (
+                                            {!asset.checked_out_to && hasPermission('assets.update') ? (
                                                 <button
                                                     onClick={() => handleCheckout(asset)}
                                                     className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
@@ -286,7 +290,7 @@ const AssetList = () => {
                                                 >
                                                     <LogOut size={18} />
                                                 </button>
-                                            ) : (
+                                            ) : asset.checked_out_to && hasPermission('assets.update') ? (
                                                 <button
                                                     onClick={() => handleCheckin(asset.id)}
                                                     className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors"
@@ -294,7 +298,7 @@ const AssetList = () => {
                                                 >
                                                     <LogIn size={18} />
                                                 </button>
-                                            )}
+                                            ) : null}
                                             <button
                                                 onClick={() => handleShowQr(asset)}
                                                 className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -302,25 +306,31 @@ const AssetList = () => {
                                             >
                                                 <QrCode size={18} />
                                             </button>
-                                            <Link
-                                                to={`/assets/detail/${asset.id}`}
-                                                className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                                                title="View Details"
-                                            >
-                                                <Eye size={18} />
-                                            </Link>
-                                            <Link
-                                                to={`/assets/edit/${asset.id}`}
-                                                className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                            >
-                                                <Edit size={18} />
-                                            </Link>
-                                            <button
-                                                onClick={() => handleDelete(asset.id)}
-                                                className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
+                                            {hasPermission('assets.read') && (
+                                                <Link
+                                                    to={`/assets/detail/${asset.id}`}
+                                                    className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                                    title="View Details"
+                                                >
+                                                    <Eye size={18} />
+                                                </Link>
+                                            )}
+                                            {hasPermission('assets.update') && (
+                                                <Link
+                                                    to={`/assets/edit/${asset.id}`}
+                                                    className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                >
+                                                    <Edit size={18} />
+                                                </Link>
+                                            )}
+                                            {hasPermission('assets.delete') && (
+                                                <button
+                                                    onClick={() => handleDelete(asset.id)}
+                                                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -387,45 +397,51 @@ const AssetList = () => {
                         <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 flex justify-between items-center">
                             <span className="text-xs text-gray-600 dark:text-gray-400 font-mono">{asset.serial_number}</span>
                             <div className="flex space-x-2">
-                                {!asset.checked_out_to ? (
+                                {!asset.checked_out_to && hasPermission('assets.update') ? (
                                     <button
                                         onClick={() => handleCheckout(asset)}
                                         className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
                                     >
                                         <LogOut size={18} />
                                     </button>
-                                ) : (
+                                ) : asset.checked_out_to && hasPermission('assets.update') ? (
                                     <button
                                         onClick={() => handleCheckin(asset.id)}
                                         className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors"
                                     >
                                         <LogIn size={18} />
                                     </button>
-                                )}
+                                ) : null}
                                 <button
                                     onClick={() => handleShowQr(asset)}
                                     className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
                                 >
                                     <QrCode size={18} />
                                 </button>
-                                <Link
-                                    to={`/assets/detail/${asset.id}`}
-                                    className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                                >
-                                    <Eye size={18} />
-                                </Link>
-                                <Link
-                                    to={`/assets/edit/${asset.id}`}
-                                    className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                >
-                                    <Edit size={18} />
-                                </Link>
-                                <button
-                                    onClick={() => handleDelete(asset.id)}
-                                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                >
-                                    <Trash2 size={18} />
-                                </button>
+                                {hasPermission('assets.read') && (
+                                    <Link
+                                        to={`/assets/detail/${asset.id}`}
+                                        className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                    >
+                                        <Eye size={18} />
+                                    </Link>
+                                )}
+                                {hasPermission('assets.update') && (
+                                    <Link
+                                        to={`/assets/edit/${asset.id}`}
+                                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                    >
+                                        <Edit size={18} />
+                                    </Link>
+                                )}
+                                {hasPermission('assets.delete') && (
+                                    <button
+                                        onClick={() => handleDelete(asset.id)}
+                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

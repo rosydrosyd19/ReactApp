@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 
 const Layout = ({ children }) => {
     const { theme, toggleTheme } = useTheme();
-    const { logout, user, currentModule, accessibleModules } = useAuth();
+    const { logout, user, currentModule, accessibleModules, hasPermission } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
@@ -15,19 +15,19 @@ const Layout = ({ children }) => {
     // Navigation Items Configuration
     const navConfigs = {
         'Asset Management': [
-            { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-            { path: '/assets', label: 'Assets', icon: Package },
-            { path: '/licenses', label: 'Licenses', icon: FileText },
-            { path: '/accessories', label: 'Accessories', icon: Box },
-            { path: '/components', label: 'Components', icon: Puzzle },
-            { path: '/accounts', label: 'Accounts', icon: UserCircle },
-            { path: '/locations', label: 'Locations', icon: MapPin },
+            { path: '/', label: 'Dashboard', icon: LayoutDashboard }, // Dashboard usually public or basic access
+            { path: '/assets', label: 'Assets', icon: Package, permission: 'assets.read' },
+            { path: '/licenses', label: 'Licenses', icon: FileText, permission: 'licenses.read' },
+            { path: '/accessories', label: 'Accessories', icon: Box, permission: 'accessories.read' },
+            { path: '/components', label: 'Components', icon: Puzzle, permission: 'components.read' },
+            { path: '/accounts', label: 'Accounts', icon: UserCircle, permission: 'accounts.read' },
+            { path: '/locations', label: 'Locations', icon: MapPin, permission: 'locations.read' },
         ],
         'System Administrator': [
-            { path: '/sysadmin/roles', label: 'Roles', icon: Shield },
-            { path: '/sysadmin/permissions', label: 'Permissions', icon: FileText },
-            { path: '/users', label: 'Users', icon: Users },
-            { path: '/sysadmin/users', label: 'User Role Assignment', icon: Users },
+            { path: '/sysadmin/roles', label: 'Roles', icon: Shield, permission: 'roles.read' },
+            { path: '/sysadmin/permissions', label: 'Permissions', icon: FileText, permission: 'permissions.read' },
+            { path: '/users', label: 'Users', icon: Users, permission: 'users.read' },
+            { path: '/sysadmin/users', label: 'User Role Assignment', icon: Users, permission: 'users.update' },
         ]
     };
 
@@ -58,6 +58,7 @@ const Layout = ({ children }) => {
 
                 <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
                     {currentNavItems.map((item) => {
+                        if (item.permission && !hasPermission(item.permission)) return null;
                         const Icon = item.icon;
                         const isActive = location.pathname === item.path;
                         return (
@@ -104,6 +105,7 @@ const Layout = ({ children }) => {
 
                 <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
                     {currentNavItems.map((item) => {
+                        if (item.permission && !hasPermission(item.permission)) return null;
                         const Icon = item.icon;
                         const isActive = location.pathname === item.path;
                         return (
@@ -220,6 +222,7 @@ const Layout = ({ children }) => {
             <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50">
                 <div className="flex justify-around items-center h-16">
                     {mobileNavItems.map((item) => {
+                        if (item.permission && !hasPermission(item.permission)) return null;
                         const Icon = item.icon;
                         const isActive = location.pathname === item.path;
                         return (

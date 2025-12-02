@@ -367,6 +367,9 @@ For questions or support, please open an issue on GitHub.
 
 
 ---do it ----
-perbaiki error ketika klik menu Edit Role
 
-sempurnakan menu Permission Registry dan perbaiki error di menu ini --
+menu Check Out/ cek in belum masuk Permission Registry perbaiki agar bisa di atur aksesnya ---
+
+tombol edit di Asset Details masih muncul meski permission Registry di uncek
+
+tambahkan juga Permission Registry CRUD di Maintenance History

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Plus, Edit, Trash2, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../core/context/AuthContext';
 
 const RoleList = () => {
+    const { hasPermission } = useAuth();
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -56,12 +58,14 @@ const RoleList = () => {
                         Manage system roles and their access levels
                     </p>
                 </div>
-                <Link
-                    to="/sysadmin/roles/create"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors whitespace-nowrap ml-4"
-                >
-                    + Add
-                </Link>
+                {hasPermission('roles.create') && (
+                    <Link
+                        to="/sysadmin/roles/create"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors whitespace-nowrap ml-4"
+                    >
+                        + Add
+                    </Link>
+                )}
             </div>
 
             {/* Desktop Table View */}
@@ -82,18 +86,22 @@ const RoleList = () => {
                                     <td className="p-4 text-gray-600 dark:text-gray-300">{role.description}</td>
                                     <td className="p-4">
                                         <div className="flex space-x-2">
-                                            <Link
-                                                to={`/sysadmin/roles/edit/${role.id}`}
-                                                className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                            >
-                                                <Edit size={18} />
-                                            </Link>
-                                            <button
-                                                onClick={() => handleDelete(role.id)}
-                                                className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
+                                            {hasPermission('roles.update') && (
+                                                <Link
+                                                    to={`/sysadmin/roles/edit/${role.id}`}
+                                                    className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                >
+                                                    <Edit size={18} />
+                                                </Link>
+                                            )}
+                                            {hasPermission('roles.delete') && (
+                                                <button
+                                                    onClick={() => handleDelete(role.id)}
+                                                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -130,18 +138,22 @@ const RoleList = () => {
                         </div>
                         <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 flex justify-end items-center">
                             <div className="flex space-x-2">
-                                <Link
-                                    to={`/sysadmin/roles/edit/${role.id}`}
-                                    className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                >
-                                    <Edit size={18} />
-                                </Link>
-                                <button
-                                    onClick={() => handleDelete(role.id)}
-                                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                >
-                                    <Trash2 size={18} />
-                                </button>
+                                {hasPermission('roles.update') && (
+                                    <Link
+                                        to={`/sysadmin/roles/edit/${role.id}`}
+                                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                    >
+                                        <Edit size={18} />
+                                    </Link>
+                                )}
+                                {hasPermission('roles.delete') && (
+                                    <button
+                                        onClick={() => handleDelete(role.id)}
+                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -154,36 +166,38 @@ const RoleList = () => {
             </div>
 
             {/* Delete Confirmation Modal */}
-            {showDeleteModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
-                        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
-                            Confirm Delete
-                        </h3>
-                        <p className="text-gray-600 dark:text-gray-300 mb-6">
-                            Are you sure you want to delete this role? This action cannot be undone.
-                        </p>
-                        <div className="flex justify-end space-x-3">
-                            <button
-                                onClick={() => {
-                                    setShowDeleteModal(false);
-                                    setRoleToDelete(null);
-                                }}
-                                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmDelete}
-                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                            >
-                                Delete
-                            </button>
+            {
+                showDeleteModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+                            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
+                                Confirm Delete
+                            </h3>
+                            <p className="text-gray-600 dark:text-gray-300 mb-6">
+                                Are you sure you want to delete this role? This action cannot be undone.
+                            </p>
+                            <div className="flex justify-end space-x-3">
+                                <button
+                                    onClick={() => {
+                                        setShowDeleteModal(false);
+                                        setRoleToDelete(null);
+                                    }}
+                                    className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

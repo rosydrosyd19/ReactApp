@@ -6,7 +6,8 @@ const queries = [
         name VARCHAR(100) NOT NULL UNIQUE,
         description TEXT,
         route VARCHAR(100) NOT NULL,
-        icon VARCHAR(50)
+        icon VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`,
     `CREATE TABLE IF NOT EXISTS core_roles (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -19,6 +20,7 @@ const queries = [
         name VARCHAR(100) NOT NULL UNIQUE,
         description TEXT,
         module_id INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (module_id) REFERENCES core_modules(id) ON DELETE CASCADE
     )`,
     `CREATE TABLE IF NOT EXISTS core_user_roles (
@@ -27,6 +29,13 @@ const queries = [
         PRIMARY KEY (user_id, role_id),
         FOREIGN KEY (user_id) REFERENCES core_users(id) ON DELETE CASCADE,
         FOREIGN KEY (role_id) REFERENCES core_roles(id) ON DELETE CASCADE
+    )`,
+    `CREATE TABLE IF NOT EXISTS core_user_permissions (
+        user_id INT NOT NULL,
+        permission_id INT NOT NULL,
+        PRIMARY KEY (user_id, permission_id),
+        FOREIGN KEY (user_id) REFERENCES core_users(id) ON DELETE CASCADE,
+        FOREIGN KEY (permission_id) REFERENCES core_permissions(id) ON DELETE CASCADE
     )`,
     `CREATE TABLE IF NOT EXISTS core_role_modules (
         role_id INT NOT NULL,
@@ -60,6 +69,34 @@ const queries = [
     `INSERT IGNORE INTO core_user_roles (user_id, role_id)
      SELECT u.id, r.id FROM core_users u, core_roles r
      WHERE u.email = 'admin@example.com' AND r.name = 'Super Admin'`
+    ,
+    // Create a basic CRUD permission set for common modules (uses sub-select to resolve module id)
+    `INSERT IGNORE INTO core_permissions (name, description, module_id) VALUES
+        ('assets.create', 'Create new assets', (SELECT id FROM core_modules WHERE name = 'Asset Management')),
+        ('assets.read', 'View assets', (SELECT id FROM core_modules WHERE name = 'Asset Management')),
+        ('assets.update', 'Update assets', (SELECT id FROM core_modules WHERE name = 'Asset Management')),
+        ('assets.delete', 'Delete assets', (SELECT id FROM core_modules WHERE name = 'Asset Management')),
+
+        ('locations.create', 'Create new locations', (SELECT id FROM core_modules WHERE name = 'Asset Management')),
+        ('locations.read', 'View locations', (SELECT id FROM core_modules WHERE name = 'Asset Management')),
+        ('locations.update', 'Update locations', (SELECT id FROM core_modules WHERE name = 'Asset Management')),
+        ('locations.delete', 'Delete locations', (SELECT id FROM core_modules WHERE name = 'Asset Management')),
+
+        ('users.create', 'Create users', (SELECT id FROM core_modules WHERE name = 'Asset Management')),
+        ('users.read', 'View users', (SELECT id FROM core_modules WHERE name = 'Asset Management')),
+        ('users.update', 'Update users', (SELECT id FROM core_modules WHERE name = 'Asset Management')),
+        ('users.delete', 'Delete users', (SELECT id FROM core_modules WHERE name = 'Asset Management')),
+
+        ('roles.create', 'Create roles', (SELECT id FROM core_modules WHERE name = 'System Administrator')),
+        ('roles.read', 'View roles', (SELECT id FROM core_modules WHERE name = 'System Administrator')),
+        ('roles.update', 'Update roles', (SELECT id FROM core_modules WHERE name = 'System Administrator')),
+        ('roles.delete', 'Delete roles', (SELECT id FROM core_modules WHERE name = 'System Administrator')),
+
+        ('permissions.create', 'Create permissions', (SELECT id FROM core_modules WHERE name = 'System Administrator')),
+        ('permissions.read', 'View permissions', (SELECT id FROM core_modules WHERE name = 'System Administrator')),
+        ('permissions.update', 'Update permissions', (SELECT id FROM core_modules WHERE name = 'System Administrator')),
+        ('permissions.delete', 'Delete permissions', (SELECT id FROM core_modules WHERE name = 'System Administrator'))
+    `
 ];
 
 const runMigrations = async () => {

@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Edit, Trash2, Search, MapPin, Eye } from 'lucide-react';
+import { useAuth } from '../../../core/context/AuthContext';
 
 const LocationList = () => {
+    const { hasPermission } = useAuth();
     const [locations, setLocations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -55,12 +57,14 @@ const LocationList = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Locations</h2>
-                <Link
-                    to="/locations/create"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                    + Add
-                </Link>
+                {hasPermission('locations.create') && (
+                    <Link
+                        to="/locations/create"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                        + Add
+                    </Link>
+                )}
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
@@ -103,18 +107,22 @@ const LocationList = () => {
                                             >
                                                 <Eye size={18} />
                                             </Link>
-                                            <Link
-                                                to={`/locations/edit/${location.id}`}
-                                                className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                            >
-                                                <Edit size={18} />
-                                            </Link>
-                                            <button
-                                                onClick={() => handleDelete(location.id)}
-                                                className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
+                                            {hasPermission('locations.update') && (
+                                                <Link
+                                                    to={`/locations/edit/${location.id}`}
+                                                    className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                >
+                                                    <Edit size={18} />
+                                                </Link>
+                                            )}
+                                            {hasPermission('locations.delete') && (
+                                                <button
+                                                    onClick={() => handleDelete(location.id)}
+                                                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -160,18 +168,22 @@ const LocationList = () => {
                                 >
                                     <Eye size={18} />
                                 </Link>
-                                <Link
-                                    to={`/locations/edit/${location.id}`}
-                                    className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                >
-                                    <Edit size={18} />
-                                </Link>
-                                <button
-                                    onClick={() => handleDelete(location.id)}
-                                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                >
-                                    <Trash2 size={18} />
-                                </button>
+                                {hasPermission('locations.update') && (
+                                    <Link
+                                        to={`/locations/edit/${location.id}`}
+                                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                    >
+                                        <Edit size={18} />
+                                    </Link>
+                                )}
+                                {hasPermission('locations.delete') && (
+                                    <button
+                                        onClick={() => handleDelete(location.id)}
+                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

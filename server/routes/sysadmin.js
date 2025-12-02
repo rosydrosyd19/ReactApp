@@ -4,7 +4,8 @@ const db = require('../db');
 
 // --- MODULES ---
 router.get('/modules', (req, res) => {
-    const sql = 'SELECT * FROM core_modules ORDER BY created_at DESC';
+    // created_at is not present in some DBs — use id DESC which is safe and deterministic
+    const sql = 'SELECT * FROM core_modules ORDER BY id DESC';
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json(err);
         res.json(results);
@@ -58,6 +59,15 @@ router.delete('/roles/:id', (req, res) => {
     });
 });
 
+// Get all role permissions mappings
+router.get('/role-permissions', (req, res) => {
+    const sql = 'SELECT * FROM core_role_permissions';
+    db.query(sql, (err, results) => {
+        if (err) return res.status(500).json(err);
+        res.json(results);
+    });
+});
+
 // --- ROLE MODULES ---
 router.get('/roles/:id/modules', (req, res) => {
     const sql = `
@@ -94,10 +104,50 @@ router.post('/roles/:id/modules', (req, res) => {
 
 // --- PERMISSIONS ---
 router.get('/permissions', (req, res) => {
-    const sql = 'SELECT * FROM core_permissions ORDER BY created_at DESC';
+    // Some DBs / older migrations don't have created_at on core_permissions — use id as a safe ordering
+    const sql = 'SELECT * FROM core_permissions ORDER BY id DESC';
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json(err);
         res.json(results);
+    });
+});
+
+// Get single permission by id
+router.get('/permissions/:id', (req, res) => {
+    const sql = 'SELECT * FROM core_permissions WHERE id = ?';
+    db.query(sql, [req.params.id], (err, results) => {
+        if (err) return res.status(500).json(err);
+        if (results.length === 0) return res.status(404).json({ message: 'Permission not found' });
+        res.json(results[0]);
+    });
+});
+
+// Create permission
+router.post('/permissions', (req, res) => {
+    const { name, description, module_id } = req.body;
+    const sql = 'INSERT INTO core_permissions (name, description, module_id) VALUES (?, ?, ?)';
+    db.query(sql, [name, description, module_id], (err, result) => {
+        if (err) return res.status(500).json(err);
+        res.status(201).json({ id: result.insertId, name, description, module_id });
+    });
+});
+
+// Update permission
+router.put('/permissions/:id', (req, res) => {
+    const { name, description, module_id } = req.body;
+    const sql = 'UPDATE core_permissions SET name = ?, description = ?, module_id = ? WHERE id = ?';
+    db.query(sql, [name, description, module_id, req.params.id], (err, result) => {
+        if (err) return res.status(500).json(err);
+        res.json({ message: 'Permission updated successfully' });
+    });
+});
+
+// Delete permission
+router.delete('/permissions/:id', (req, res) => {
+    const sql = 'DELETE FROM core_permissions WHERE id = ?';
+    db.query(sql, [req.params.id], (err, result) => {
+        if (err) return res.status(500).json(err);
+        res.json({ message: 'Permission deleted successfully' });
     });
 });
 
@@ -134,6 +184,73 @@ router.get('/users/:id/roles', (req, res) => {
     db.query(sql, [req.params.id], (err, results) => {
         if (err) return res.status(500).json(err);
         res.json(results);
+    });
+});
+
+// --- USER PERMISSIONS ---
+router.get('/users/:id/permissions', (req, res) => {
+    const sql = `
+        SELECT p.* FROM core_permissions p
+        JOIN core_user_permissions up ON p.id = up.permission_id
+        WHERE up.user_id = ?
+    `;
+
+    db.query(sql, [req.params.id], (err, results) => {
+        if (err) {
+            // If mapping table doesn't exist, create it and return empty list rather than 500
+            if (err.code === 'ER_NO_SUCH_TABLE' || /doesn't exist/.test(err.message || '')) {
+                const createSql = `CREATE TABLE IF NOT EXISTS core_user_permissions (
+                    user_id INT NOT NULL,
+                    permission_id INT NOT NULL,
+                    PRIMARY KEY (user_id, permission_id),
+                    FOREIGN KEY (user_id) REFERENCES core_users(id) ON DELETE CASCADE,
+                    FOREIGN KEY (permission_id) REFERENCES core_permissions(id) ON DELETE CASCADE
+                )`;
+                return db.query(createSql, (createErr) => {
+                    if (createErr) {
+                        console.error('Failed to create core_user_permissions on-demand:', createErr);
+                        return res.status(500).json(createErr);
+                    }
+                    // table created, return empty
+                    return res.json([]);
+                });
+            }
+            return res.status(500).json(err);
+        }
+        res.json(results);
+    });
+});
+
+router.post('/users/:id/permissions', (req, res) => {
+    const { permissionIds } = req.body; // array
+    const userId = req.params.id;
+
+    // ensure table exists first, then replace assignments
+    const createSql = `CREATE TABLE IF NOT EXISTS core_user_permissions (
+        user_id INT NOT NULL,
+        permission_id INT NOT NULL,
+        PRIMARY KEY (user_id, permission_id),
+        FOREIGN KEY (user_id) REFERENCES core_users(id) ON DELETE CASCADE,
+        FOREIGN KEY (permission_id) REFERENCES core_permissions(id) ON DELETE CASCADE
+    )`;
+
+    db.query(createSql, (createErr) => {
+        if (createErr) return res.status(500).json(createErr);
+
+        // delete existing
+        db.query('DELETE FROM core_user_permissions WHERE user_id = ?', [userId], (err) => {
+            if (err) return res.status(500).json(err);
+
+            if (!permissionIds || permissionIds.length === 0) {
+                return res.json({ message: 'User permissions updated successfully' });
+            }
+
+            const values = permissionIds.map(pid => [userId, pid]);
+            db.query('INSERT INTO core_user_permissions (user_id, permission_id) VALUES ?', [values], (err) => {
+                if (err) return res.status(500).json(err);
+                res.json({ message: 'User permissions updated successfully' });
+            });
+        });
     });
 });
 

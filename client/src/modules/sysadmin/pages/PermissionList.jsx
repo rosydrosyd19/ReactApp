@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Lock, Search } from 'lucide-react';
+import { Lock, Search, Plus, Edit, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../core/context/AuthContext';
 
 const PermissionList = () => {
+    const { hasPermission } = useAuth();
     const [permissions, setPermissions] = useState([]);
     const [modules, setModules] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [permissionToDelete, setPermissionToDelete] = useState(null);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -27,6 +32,26 @@ const PermissionList = () => {
             setError('Failed to load permissions. Please try again.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = (id) => {
+        setPermissionToDelete(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!permissionToDelete) return;
+        try {
+            await axios.delete(`http://localhost:5000/api/sysadmin/permissions/${permissionToDelete}`);
+            setPermissions(permissions.filter(p => p.id !== permissionToDelete));
+            alert('Permission deleted successfully');
+        } catch (err) {
+            console.error('Error deleting permission:', err);
+            alert(err.response?.data?.message || 'Failed to delete permission');
+        } finally {
+            setShowDeleteModal(false);
+            setPermissionToDelete(null);
         }
     };
 
@@ -74,6 +99,11 @@ const PermissionList = () => {
                         View all available system permissions
                     </p>
                 </div>
+                {hasPermission('permissions.create') && (
+                    <Link to="/sysadmin/permissions/create" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors whitespace-nowrap ml-4">
+                        + Add
+                    </Link>
+                )}
             </div>
 
             {/* Search Bar */}
@@ -114,6 +144,7 @@ const PermissionList = () => {
                                         <tr>
                                             <th className="p-4">Permission Name</th>
                                             <th className="p-4">Description</th>
+                                            <th className="p-4">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -121,6 +152,16 @@ const PermissionList = () => {
                                             <tr key={perm.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                                 <td className="p-4 font-medium text-gray-800 dark:text-white">{perm.name}</td>
                                                 <td className="p-4 text-gray-600 dark:text-gray-300">{perm.description}</td>
+                                                <td className="p-4">
+                                                    <div className="flex space-x-2">
+                                                        {hasPermission('permissions.update') && (
+                                                            <Link to={`/sysadmin/permissions/edit/${perm.id}`} className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"><Edit size={18} /></Link>
+                                                        )}
+                                                        {hasPermission('permissions.delete') && (
+                                                            <button onClick={() => handleDelete(perm.id)} className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"><Trash2 size={18} /></button>
+                                                        )}
+                                                    </div>
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -151,17 +192,45 @@ const PermissionList = () => {
                             </div>
                             <div className="divide-y divide-gray-100 dark:divide-gray-700">
                                 {perms.map((perm) => (
-                                    <div key={perm.id} className="p-4">
-                                        <h4 className="font-semibold text-gray-800 dark:text-white mb-1 text-sm">{perm.name}</h4>
-                                        <p className="text-xs text-gray-600 dark:text-gray-400">{perm.description}</p>
+                                    <div key={perm.id} className="p-4 flex items-start justify-between">
+                                        <div>
+                                            <h4 className="font-semibold text-gray-800 dark:text-white mb-1 text-sm">{perm.name}</h4>
+                                            <p className="text-xs text-gray-600 dark:text-gray-400">{perm.description}</p>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            {hasPermission('permissions.update') && (
+                                                <Link to={`/sysadmin/permissions/edit/${perm.id}`} className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"><Edit size={16} /></Link>
+                                            )}
+                                            {hasPermission('permissions.delete') && (
+                                                <button onClick={() => handleDelete(perm.id)} className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"><Trash2 size={16} /></button>
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
+
                             </div>
                         </div>
                     ))
                 )}
             </div>
-        </div>
+
+
+            {/* Delete Confirm Modal */}
+
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Confirm Delete</h3>
+                        <p className="text-gray-600 dark:text-gray-300 mb-6">Are you sure you want to delete this permission? This action cannot be undone.</p>
+                        <div className="flex justify-end space-x-3">
+                            <button onClick={() => { setShowDeleteModal(false); setPermissionToDelete(null); }} className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">Cancel</button>
+                            <button onClick={confirmDelete} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+        </div >
     );
 };
 

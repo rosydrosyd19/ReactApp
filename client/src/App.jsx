@@ -33,6 +33,7 @@ import ModuleSelection from './modules/core/pages/ModuleSelection';
 import RoleList from './modules/sysadmin/pages/RoleList';
 import RoleForm from './modules/sysadmin/pages/RoleForm';
 import PermissionList from './modules/sysadmin/pages/PermissionList';
+import PermissionForm from './modules/sysadmin/pages/PermissionForm';
 import UserManagement from './modules/sysadmin/pages/UserManagement';
 
 function App() {
@@ -86,6 +87,8 @@ function App() {
                     <Route path="/sysadmin/roles/create" element={<RoleForm />} />
                     <Route path="/sysadmin/roles/edit/:id" element={<RoleForm />} />
                     <Route path="/sysadmin/permissions" element={<PermissionList />} />
+                    <Route path="/sysadmin/permissions/create" element={<PermissionForm />} />
+                    <Route path="/sysadmin/permissions/edit/:id" element={<PermissionForm />} />
                     <Route path="/sysadmin/users" element={<UserManagement />} />
                   </Routes>
                 </Layout>

@@ -85,25 +85,58 @@ router.post('/login', (req, res) => {
             db.query(modulesSql, [user.id], (err, modules) => {
                 if (err) return res.status(500).json(err);
 
-                // Create token
-                const expiresIn = rememberMe ? '30d' : '24h';
-                const token = jwt.sign(
-                    { id: user.id, email: user.email, name: user.name, roles: roles.map(r => r.name) },
-                    JWT_SECRET,
-                    { expiresIn }
-                );
+                // Fetch effective permissions (from roles and direct user assignments)
+                const rolePermsSql = `
+                    SELECT DISTINCT p.* FROM core_permissions p
+                    JOIN core_role_permissions rp ON p.id = rp.permission_id
+                    JOIN core_user_roles ur ON ur.role_id = rp.role_id
+                    WHERE ur.user_id = ?
+                `;
 
-                res.json({
-                    token,
-                    user: {
-                        id: user.id,
-                        name: user.name,
-                        email: user.email,
-                        department: user.department,
-                        position: user.position,
-                        roles,
-                        modules
+                const userPermsSql = `
+                    SELECT p.* FROM core_permissions p
+                    JOIN core_user_permissions up ON p.id = up.permission_id
+                    WHERE up.user_id = ?
+                `;
+
+                db.query(rolePermsSql, [user.id], (err, rolePerms) => {
+                    if (err) {
+                        // If role permissions table missing, continue with empty
+                        rolePerms = [];
                     }
+
+                    db.query(userPermsSql, [user.id], (err, userPerms) => {
+                        if (err) {
+                            userPerms = [];
+                        }
+
+                        // Merge and dedupe by id
+                        const permMap = new Map();
+                        [...rolePerms, ...userPerms].forEach(p => permMap.set(p.id, p));
+                        const perms = Array.from(permMap.values());
+
+                        // Create token
+                        const expiresIn = rememberMe ? '30d' : '24h';
+                        const token = jwt.sign(
+                            { id: user.id, email: user.email, name: user.name, roles: roles.map(r => r.name) },
+                            JWT_SECRET,
+                            { expiresIn }
+                        );
+
+                        res.json({
+                            token,
+                            user: {
+                                id: user.id,
+                                name: user.name,
+                                email: user.email,
+                                department: user.department,
+                                position: user.position,
+                                roles,
+                                modules,
+                                permissions: perms // add permissions list
+                            }
+                        });
+                    });
                 });
             });
         });
