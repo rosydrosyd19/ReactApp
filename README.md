@@ -367,4 +367,4 @@ For questions or support, please open an issue on GitHub.
 
 
 ---do it ----
-Assign Roles sudah sesuai tapi ketika saya masuk melalui link langsung menu tetap bisa di akses perbaiki agar sesuai dengan Assign Roles yang di berikan ke user
+Munculkan note yang ada di menu Assets, Licenses, Accessories, Components dan accounts di halaman detail masing masing

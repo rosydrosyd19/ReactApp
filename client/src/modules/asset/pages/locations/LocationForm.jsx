@@ -30,8 +30,16 @@ const LocationForm = () => {
     const fetchLocation = async () => {
         try {
             const res = await axios.get(`http://localhost:5000/api/locations/${id}`);
-            setFormData(res.data);
-            setTitle(`Edit ${res.data.name}`);
+            const data = res.data;
+            setFormData({
+                name: data.name || '',
+                address: data.address || '',
+                city: data.city || '',
+                state: data.state || '',
+                zip: data.zip || '',
+                country: data.country || ''
+            });
+            setTitle(`Edit ${data.name}`);
         } catch (error) {
             console.error('Error fetching location:', error);
         }

@@ -12,8 +12,8 @@ const ComponentForm = () => {
         name: '',
         category: '',
         model_number: '',
-        total_quantity: 1,
-        min_quantity: 0,
+        total_quantity: '',
+        min_quantity: '',
         notes: ''
     });
     const [imageFile, setImageFile] = useState(null);
@@ -33,7 +33,14 @@ const ComponentForm = () => {
         try {
             const res = await axios.get(`http://localhost:5000/api/components/${id}`);
             const data = res.data;
-            setFormData(data);
+            setFormData({
+                name: data.name || '',
+                category: data.category || '',
+                model_number: data.model_number || '',
+                total_quantity: data.total_quantity || '',
+                min_quantity: data.min_quantity || '',
+                notes: data.notes || ''
+            });
             if (data.image_url) {
                 setExistingImage(`http://localhost:5000${data.image_url}`);
             }

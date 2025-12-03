@@ -4,6 +4,7 @@ import { ThemeProvider } from './modules/core/context/ThemeContext';
 import { AuthProvider } from './modules/core/context/AuthContext';
 import Layout from './modules/core/components/Layout';
 import ProtectedRoute from './modules/core/components/ProtectedRoute';
+import PermissionRoute from './modules/core/components/PermissionRoute';
 import Login from './modules/core/pages/Login';
 import Dashboard from './modules/core/pages/Dashboard';
 import AssetList from './modules/asset/pages/assets/AssetList';
@@ -56,43 +57,197 @@ function App() {
                   <Layout>
                     <Routes>
                       <Route path="/" element={<Dashboard />} />
-                      <Route path="/assets" element={<AssetList />} />
-                      <Route path="/assets/create" element={<AssetForm />} />
-                      <Route path="/assets/edit/:id" element={<AssetForm />} />
-                      <Route path="/assets/detail/:id" element={<AssetDetail />} />
-                      <Route path="/locations" element={<LocationList />} />
-                      <Route path="/locations/create" element={<LocationForm />} />
-                      <Route path="/locations/edit/:id" element={<LocationForm />} />
-                      <Route path="/locations/detail/:id" element={<LocationDetail />} />
-                      <Route path="/users" element={<UserList />} />
-                      <Route path="/users/create" element={<UserForm />} />
-                      <Route path="/users/edit/:id" element={<UserForm />} />
-                      <Route path="/users/detail/:id" element={<UserDetail />} />
-                      <Route path="/licenses" element={<LicenseList />} />
-                      <Route path="/licenses/create" element={<LicenseForm />} />
-                      <Route path="/licenses/edit/:id" element={<LicenseForm />} />
-                      <Route path="/licenses/detail/:id" element={<LicenseDetail />} />
-                      <Route path="/accessories" element={<AccessoryList />} />
-                      <Route path="/accessories/create" element={<AccessoryForm />} />
-                      <Route path="/accessories/edit/:id" element={<AccessoryForm />} />
-                      <Route path="/accessories/detail/:id" element={<AccessoryDetail />} />
-                      <Route path="/components" element={<ComponentList />} />
-                      <Route path="/components/create" element={<ComponentForm />} />
-                      <Route path="/components/edit/:id" element={<ComponentForm />} />
-                      <Route path="/components/detail/:id" element={<ComponentDetail />} />
-                      <Route path="/accounts" element={<AccountList />} />
-                      <Route path="/accounts/create" element={<AccountForm />} />
-                      <Route path="/accounts/edit/:id" element={<AccountForm />} />
-                      <Route path="/accounts/detail/:id" element={<AccountDetail />} />
+
+                      {/* Asset Routes */}
+                      <Route path="/assets" element={
+                        <PermissionRoute permission="assets.read">
+                          <AssetList />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/assets/create" element={
+                        <PermissionRoute permission="assets.create">
+                          <AssetForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/assets/edit/:id" element={
+                        <PermissionRoute permission="assets.update">
+                          <AssetForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/assets/detail/:id" element={
+                        <PermissionRoute permission="assets.read">
+                          <AssetDetail />
+                        </PermissionRoute>
+                      } />
+
+                      {/* Location Routes */}
+                      <Route path="/locations" element={
+                        <PermissionRoute permission="locations.read">
+                          <LocationList />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/locations/create" element={
+                        <PermissionRoute permission="locations.create">
+                          <LocationForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/locations/edit/:id" element={
+                        <PermissionRoute permission="locations.update">
+                          <LocationForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/locations/detail/:id" element={
+                        <PermissionRoute permission="locations.read">
+                          <LocationDetail />
+                        </PermissionRoute>
+                      } />
+
+                      {/* User Routes */}
+                      <Route path="/users" element={
+                        <PermissionRoute permission="users.read">
+                          <UserList />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/users/create" element={
+                        <PermissionRoute permission="users.create">
+                          <UserForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/users/edit/:id" element={
+                        <PermissionRoute permission="users.update">
+                          <UserForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/users/detail/:id" element={
+                        <PermissionRoute permission="users.read">
+                          <UserDetail />
+                        </PermissionRoute>
+                      } />
+
+                      {/* License Routes */}
+                      <Route path="/licenses" element={
+                        <PermissionRoute permission="licenses.read">
+                          <LicenseList />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/licenses/create" element={
+                        <PermissionRoute permission="licenses.create">
+                          <LicenseForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/licenses/edit/:id" element={
+                        <PermissionRoute permission="licenses.update">
+                          <LicenseForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/licenses/detail/:id" element={
+                        <PermissionRoute permission="licenses.read">
+                          <LicenseDetail />
+                        </PermissionRoute>
+                      } />
+
+                      {/* Accessory Routes */}
+                      <Route path="/accessories" element={
+                        <PermissionRoute permission="accessories.read">
+                          <AccessoryList />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/accessories/create" element={
+                        <PermissionRoute permission="accessories.create">
+                          <AccessoryForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/accessories/edit/:id" element={
+                        <PermissionRoute permission="accessories.update">
+                          <AccessoryForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/accessories/detail/:id" element={
+                        <PermissionRoute permission="accessories.read">
+                          <AccessoryDetail />
+                        </PermissionRoute>
+                      } />
+
+                      {/* Component Routes */}
+                      <Route path="/components" element={
+                        <PermissionRoute permission="components.read">
+                          <ComponentList />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/components/create" element={
+                        <PermissionRoute permission="components.create">
+                          <ComponentForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/components/edit/:id" element={
+                        <PermissionRoute permission="components.update">
+                          <ComponentForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/components/detail/:id" element={
+                        <PermissionRoute permission="components.read">
+                          <ComponentDetail />
+                        </PermissionRoute>
+                      } />
+
+                      {/* Account Routes */}
+                      <Route path="/accounts" element={
+                        <PermissionRoute permission="accounts.read">
+                          <AccountList />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/accounts/create" element={
+                        <PermissionRoute permission="accounts.create">
+                          <AccountForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/accounts/edit/:id" element={
+                        <PermissionRoute permission="accounts.update">
+                          <AccountForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/accounts/detail/:id" element={
+                        <PermissionRoute permission="accounts.read">
+                          <AccountDetail />
+                        </PermissionRoute>
+                      } />
 
                       {/* System Admin Routes */}
-                      <Route path="/sysadmin/roles" element={<RoleList />} />
-                      <Route path="/sysadmin/roles/create" element={<RoleForm />} />
-                      <Route path="/sysadmin/roles/edit/:id" element={<RoleForm />} />
-                      <Route path="/sysadmin/permissions" element={<PermissionList />} />
-                      <Route path="/sysadmin/permissions/create" element={<PermissionForm />} />
-                      <Route path="/sysadmin/permissions/edit/:id" element={<PermissionForm />} />
-                      <Route path="/sysadmin/users" element={<UserManagement />} />
+                      <Route path="/sysadmin/roles" element={
+                        <PermissionRoute permission="roles.read">
+                          <RoleList />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/sysadmin/roles/create" element={
+                        <PermissionRoute permission="roles.create">
+                          <RoleForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/sysadmin/roles/edit/:id" element={
+                        <PermissionRoute permission="roles.update">
+                          <RoleForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/sysadmin/permissions" element={
+                        <PermissionRoute permission="permissions.read">
+                          <PermissionList />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/sysadmin/permissions/create" element={
+                        <PermissionRoute permission="permissions.create">
+                          <PermissionForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/sysadmin/permissions/edit/:id" element={
+                        <PermissionRoute permission="permissions.update">
+                          <PermissionForm />
+                        </PermissionRoute>
+                      } />
+                      <Route path="/sysadmin/users" element={
+                        <PermissionRoute permission="users.update">
+                          <UserManagement />
+                        </PermissionRoute>
+                      } />
                     </Routes>
                   </Layout>
                 </ProtectedRoute>

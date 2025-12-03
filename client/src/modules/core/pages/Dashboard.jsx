@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useLocation } from 'react-router-dom';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -11,7 +12,7 @@ import {
     Legend,
     ArcElement,
 } from 'chart.js';
-import { Loader2, Server, CheckCircle, AlertCircle, Wrench, Key, Calendar } from 'lucide-react';
+import { Loader2, Server, CheckCircle, AlertCircle, Wrench, Key, Calendar, XCircle } from 'lucide-react';
 
 ChartJS.register(
     CategoryScale,
@@ -24,6 +25,7 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
+    const location = useLocation();
     const [stats, setStats] = useState({
         total: 0,
         ready: 0,
@@ -33,6 +35,19 @@ const Dashboard = () => {
         recent_maintenance: []
     });
     const [loading, setLoading] = useState(true);
+    const [showError, setShowError] = useState(false);
+    const errorMessage = location.state?.error;
+
+    useEffect(() => {
+        if (errorMessage) {
+            setShowError(true);
+            // Clear the error from location state
+            window.history.replaceState({}, document.title);
+            // Auto-hide after 5 seconds
+            const timer = setTimeout(() => setShowError(false), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [errorMessage]);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -82,6 +97,23 @@ const Dashboard = () => {
         <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Dashboard</h2>
 
+            {/* Permission Error Alert */}
+            {showError && errorMessage && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start gap-3">
+                    <XCircle className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" size={20} />
+                    <div className="flex-1">
+                        <h3 className="text-sm font-semibold text-red-800 dark:text-red-200">Access Denied</h3>
+                        <p className="text-sm text-red-700 dark:text-red-300 mt-1">{errorMessage}</p>
+                    </div>
+                    <button
+                        onClick={() => setShowError(false)}
+                        className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200"
+                    >
+                        <XCircle size={18} />
+                    </button>
+                </div>
+            )}
+
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                 {cards.map((card, index) => {
@@ -126,8 +158,8 @@ const Dashboard = () => {
                                         <div className="flex justify-between items-start">
                                             <h4 className="text-sm font-medium text-gray-800 dark:text-white">{record.title}</h4>
                                             <span className={`text-xs px-2 py-0.5 rounded-full ${record.status === 'Completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                                                    record.status === 'In Progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                                                        'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
+                                                record.status === 'In Progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                                    'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
                                                 }`}>
                                                 {record.status}
                                             </span>

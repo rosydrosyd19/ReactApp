@@ -31,8 +31,16 @@ const AccountForm = () => {
     const fetchAccount = async () => {
         try {
             const res = await axios.get(`http://localhost:5000/api/accounts/${id}`);
-            setFormData(res.data);
-            setTitle(`Edit ${res.data.account_name}`);
+            const data = res.data;
+            setFormData({
+                account_type: data.account_type || 'email',
+                account_name: data.account_name || '',
+                username: data.username || '',
+                password: data.password || '',
+                url: data.url || '',
+                notes: data.notes || ''
+            });
+            setTitle(`Edit ${data.account_name}`);
         } catch (error) {
             console.error('Error fetching account:', error);
         }

@@ -13,7 +13,7 @@ const AccessoryForm = () => {
         category: '',
         manufacturer: '',
         model_number: '',
-        total_quantity: 1,
+        total_quantity: '',
         purchase_date: '',
         cost: '',
         notes: ''
@@ -39,7 +39,16 @@ const AccessoryForm = () => {
             if (data.purchase_date) {
                 data.purchase_date = new Date(data.purchase_date).toISOString().split('T')[0];
             }
-            setFormData(data);
+            setFormData({
+                name: data.name || '',
+                category: data.category || '',
+                manufacturer: data.manufacturer || '',
+                model_number: data.model_number || '',
+                total_quantity: data.total_quantity || '',
+                purchase_date: data.purchase_date || '',
+                cost: data.cost || '',
+                notes: data.notes || ''
+            });
             if (data.image_url) {
                 setExistingImage(`http://localhost:5000${data.image_url}`);
             }

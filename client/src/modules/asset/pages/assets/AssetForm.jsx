@@ -39,10 +39,10 @@ const AssetForm = () => {
                 data.purchase_date = data.purchase_date.split('T')[0];
             }
             setFormData({
-                name: data.name,
-                category: data.category,
-                serial_number: data.serial_number,
-                status: data.status,
+                name: data.name || '',
+                category: data.category || '',
+                serial_number: data.serial_number || '',
+                status: data.status || 'Ready to Deploy',
                 purchase_date: data.purchase_date || '',
                 notes: data.notes || '',
             });

@@ -35,8 +35,17 @@ const UserForm = () => {
     const fetchUser = async () => {
         try {
             const res = await axios.get(`http://localhost:5000/api/users/${id}`);
-            setFormData({ ...res.data, password: '', confirmPassword: '' });
-            setTitle(`Edit ${res.data.name}`);
+            const data = res.data;
+            setFormData({
+                name: data.name || '',
+                email: data.email || '',
+                position: data.position || '',
+                department: data.department || '',
+                phone: data.phone || '',
+                password: '',
+                confirmPassword: ''
+            });
+            setTitle(`Edit ${data.name}`);
         } catch (error) {
             console.error('Error fetching user:', error);
         }

@@ -13,7 +13,7 @@ const LicenseForm = () => {
     const [formData, setFormData] = useState({
         software_name: '',
         product_key: '',
-        seats: 1,
+        seats: '',
         purchase_date: '',
         expiration_date: '',
         notes: ''
@@ -34,7 +34,14 @@ const LicenseForm = () => {
             const data = res.data;
             if (data.purchase_date) data.purchase_date = data.purchase_date.split('T')[0];
             if (data.expiration_date) data.expiration_date = data.expiration_date.split('T')[0];
-            setFormData(data);
+            setFormData({
+                software_name: data.software_name || '',
+                product_key: data.product_key || '',
+                seats: data.seats || '',
+                purchase_date: data.purchase_date || '',
+                expiration_date: data.expiration_date || '',
+                notes: data.notes || ''
+            });
             setTitle(`Edit ${data.software_name}`);
         } catch (error) {
             console.error('Error fetching license:', error);

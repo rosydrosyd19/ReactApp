@@ -262,13 +262,12 @@ const UserManagement = () => {
                                     <span className="text-xs text-gray-400">(select user roles)</span>
                                 </div>
 
-                                {/* Search Input for Roles */}
                                 <div className="relative mb-3">
                                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                                     <input
                                         type="text"
                                         placeholder="Search roles..."
-                                        value={roleSearch}
+                                        value={roleSearch || ''}
                                         onChange={(e) => setRoleSearch(e.target.value)}
                                         className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
@@ -317,7 +316,7 @@ const UserManagement = () => {
                                     <input
                                         type="text"
                                         placeholder="Search permissions..."
-                                        value={permissionSearch}
+                                        value={permissionSearch || ''}
                                         onChange={(e) => setPermissionSearch(e.target.value)}
                                         className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
