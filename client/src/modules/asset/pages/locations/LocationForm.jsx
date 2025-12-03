@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, ArrowLeft } from 'lucide-react';
+import { useLayout } from '../../../core/context/LayoutContext';
 
 const LocationForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { setTitle } = useLayout();
     const isEditMode = !!id;
 
     const [formData, setFormData] = useState({
@@ -20,13 +22,16 @@ const LocationForm = () => {
     useEffect(() => {
         if (isEditMode) {
             fetchLocation();
+        } else {
+            setTitle('Create New Location');
         }
-    }, [id]);
+    }, [id, isEditMode, setTitle]);
 
     const fetchLocation = async () => {
         try {
             const res = await axios.get(`http://localhost:5000/api/locations/${id}`);
             setFormData(res.data);
+            setTitle(`Edit ${res.data.name}`);
         } catch (error) {
             console.error('Error fetching location:', error);
         }

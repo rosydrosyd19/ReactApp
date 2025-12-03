@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Save, Calendar, DollarSign, Wrench, FileText, User } from 'lucide-react';
+import { X, Save, Calendar, Wrench, FileText, User } from 'lucide-react';
 import axios from 'axios';
 
 const MaintenanceForm = ({ assetId, maintenance, onClose, onSave }) => {
@@ -158,7 +158,7 @@ const MaintenanceForm = ({ assetId, maintenance, onClose, onSave }) => {
                                 Cost
                             </label>
                             <div className="relative">
-                                <DollarSign className="absolute left-3 top-2.5 text-gray-400" size={18} />
+                                <span className="absolute left-3 top-2.5 text-gray-500 font-medium text-sm">Rp</span>
                                 <input
                                     type="number"
                                     name="cost"

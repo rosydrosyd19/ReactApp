@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, ArrowLeft, Upload, X } from 'lucide-react';
+import { useLayout } from '../../../core/context/LayoutContext';
 
 const AssetForm = () => {
+    const { setTitle } = useLayout();
     const { id } = useParams();
     const navigate = useNavigate();
     const isEditMode = !!id;
@@ -14,6 +16,7 @@ const AssetForm = () => {
         serial_number: '',
         status: 'Ready to Deploy',
         purchase_date: '',
+        notes: '',
     });
 
     const [imageFile, setImageFile] = useState(null);
@@ -23,8 +26,10 @@ const AssetForm = () => {
     useEffect(() => {
         if (isEditMode) {
             fetchAsset();
+        } else {
+            setTitle('Create New Asset');
         }
-    }, [id]);
+    }, [id, isEditMode, setTitle]);
 
     const fetchAsset = async () => {
         try {
@@ -39,10 +44,12 @@ const AssetForm = () => {
                 serial_number: data.serial_number,
                 status: data.status,
                 purchase_date: data.purchase_date || '',
+                notes: data.notes || '',
             });
             if (data.image_url) {
                 setExistingImage(`http://localhost:5000${data.image_url}`);
             }
+            setTitle(`Edit ${data.name}`);
         } catch (error) {
             console.error('Error fetching asset:', error);
         }
@@ -79,6 +86,7 @@ const AssetForm = () => {
             formDataToSend.append('serial_number', formData.serial_number);
             formDataToSend.append('status', formData.status);
             formDataToSend.append('purchase_date', formData.purchase_date);
+            formDataToSend.append('notes', formData.notes);
 
             if (imageFile) {
                 formDataToSend.append('image', imageFile);
@@ -238,6 +246,20 @@ const AssetForm = () => {
                                 </div>
                             )}
                         </div>
+                    </div>
+
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Notes
+                        </label>
+                        <textarea
+                            name="notes"
+                            rows="4"
+                            className="w-full p-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                            value={formData.notes}
+                            onChange={handleChange}
+                            placeholder="Add any additional notes about this asset..."
+                        />
                     </div>
                 </div>
 

@@ -3,7 +3,10 @@ import axios from 'axios';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, User, Mail, Phone, Briefcase, Building } from 'lucide-react';
 
+import { useLayout } from '../../../core/context/LayoutContext';
+
 const UserDetail = () => {
+    const { setTitle } = useLayout();
     const { id } = useParams();
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
@@ -12,6 +15,12 @@ const UserDetail = () => {
     useEffect(() => {
         fetchUser();
     }, [id]);
+
+    useEffect(() => {
+        if (user) {
+            setTitle(user.name);
+        }
+    }, [user, setTitle]);
 
     const fetchUser = async () => {
         try {
@@ -49,7 +58,7 @@ const UserDetail = () => {
                 >
                     <ArrowLeft size={24} className="text-gray-600 dark:text-gray-300" />
                 </button>
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">User Details</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{user.name}</h2>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

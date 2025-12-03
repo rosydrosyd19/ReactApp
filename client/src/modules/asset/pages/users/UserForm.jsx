@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { useLayout } from '../../../core/context/LayoutContext';
 
 const UserForm = () => {
+    const { setTitle } = useLayout();
     const { id } = useParams();
     const navigate = useNavigate();
     const isEditMode = !!id;
@@ -25,13 +27,16 @@ const UserForm = () => {
     useEffect(() => {
         if (isEditMode) {
             fetchUser();
+        } else {
+            setTitle('Create New User');
         }
-    }, [id]);
+    }, [id, isEditMode, setTitle]);
 
     const fetchUser = async () => {
         try {
             const res = await axios.get(`http://localhost:5000/api/users/${id}`);
             setFormData({ ...res.data, password: '', confirmPassword: '' });
+            setTitle(`Edit ${res.data.name}`);
         } catch (error) {
             console.error('Error fetching user:', error);
         }

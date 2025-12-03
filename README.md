@@ -367,7 +367,4 @@ For questions or support, please open an issue on GitHub.
 
 
 ---do it ----
-
-tombol edit di Asset Details masih muncul meski permission Registry di uncek
-
-tambahkan juga Permission Registry CRUD di Maintenance History
+Assign Roles sudah sesuai tapi ketika saya masuk melalui link langsung menu tetap bisa di akses perbaiki agar sesuai dengan Assign Roles yang di berikan ke user

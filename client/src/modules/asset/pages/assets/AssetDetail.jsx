@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Package, Calendar, Tag, Hash, FileText, Clock, User as UserIcon, Key, User, QrCode, Wrench, Plus, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Package, Calendar, Tag, Hash, FileText, Clock, User as UserIcon, Key, User, QrCode, Wrench, Plus, Edit, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import MaintenanceForm from '../../components/MaintenanceForm';
+import { useAuth } from '../../../core/context/AuthContext';
+
+import { useLayout } from '../../../core/context/LayoutContext';
 
 const AssetDetail = () => {
+    const { hasPermission } = useAuth();
+    const { setTitle } = useLayout();
     const { id } = useParams();
     const navigate = useNavigate();
     const [asset, setAsset] = useState(null);
@@ -30,6 +35,12 @@ const AssetDetail = () => {
         fetchAccounts();
         fetchMaintenances();
     }, [id]);
+
+    useEffect(() => {
+        if (asset) {
+            setTitle(asset.name);
+        }
+    }, [asset, setTitle]);
 
     const fetchAsset = async () => {
         try {
@@ -112,7 +123,6 @@ const AssetDetail = () => {
         try {
             await axios.delete(`http://localhost:5000/api/assets/${id}/maintenance/${maintenanceToDelete}`);
             fetchMaintenances();
-            // alert('Maintenance record deleted successfully'); // Optional: show success message
         } catch (error) {
             console.error('Error deleting maintenance:', error);
             alert('Failed to delete maintenance record');
@@ -147,114 +157,121 @@ const AssetDetail = () => {
                 >
                     <ArrowLeft size={24} className="text-gray-600 dark:text-gray-300" />
                 </button>
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Asset Details</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{asset.name}</h2>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Info */}
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                        <div className="flex items-start gap-6">
+                        <div className="flex items-start gap-6 mb-6">
                             {asset.image_url ? (
                                 <img
                                     src={`http://localhost:5000${asset.image_url}`}
                                     alt={asset.name}
-                                    className="w-32 h-32 object-cover rounded-lg"
+                                    className="w-24 h-24 object-cover rounded-lg"
                                 />
                             ) : (
-                                <div className="w-32 h-32 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                                    <Package size={48} className="text-gray-400" />
+                                <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                    <Package size={48} className="text-blue-600 dark:text-blue-400" />
                                 </div>
                             )}
                             <div className="flex-1">
                                 <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">{asset.name}</h3>
+                                <div className="flex flex-wrap gap-2 mb-2">
+                                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded text-xs font-mono">
+                                        SN: {asset.serial_number}
+                                    </span>
+                                    <span
+                                        className={`px-2 py-1 rounded text-xs font-medium ${asset.status === 'Ready to Deploy'
+                                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                            : asset.status === 'Deployed'
+                                                ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                                                : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
+                                            }`}
+                                    >
+                                        {asset.status}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                                <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">General Information</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="flex items-center text-gray-600 dark:text-gray-300">
                                         <Tag size={18} className="mr-2" />
                                         <span className="text-sm">Category: <strong>{asset.category}</strong></span>
                                     </div>
                                     <div className="flex items-center text-gray-600 dark:text-gray-300">
-                                        <Hash size={18} className="mr-2" />
-                                        <span className="text-sm font-mono">SN: <strong>{asset.serial_number}</strong></span>
-                                    </div>
-                                    <div className="flex items-center text-gray-600 dark:text-gray-300">
                                         <Calendar size={18} className="mr-2" />
                                         <span className="text-sm">Purchased: <strong>{asset.purchase_date || 'N/A'}</strong></span>
                                     </div>
-                                    <div>
-                                        <span
-                                            className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${asset.status === 'Ready to Deploy'
-                                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                : asset.status === 'Deployed'
-                                                    ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                                                    : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
-                                                }`}
-                                        >
-                                            {asset.status}
-                                        </span>
-                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    {/* Checkout Info */}
-                    {asset.checked_out_to && (
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                            <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Checkout Information</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="flex items-center text-gray-600 dark:text-gray-300">
-                                    <UserIcon size={18} className="mr-2" />
-                                    <span className="text-sm">Checked Out To: <strong>{asset.checked_out_to}</strong></span>
-                                </div>
-                                <div className="flex items-center text-gray-600 dark:text-gray-300">
-                                    <Clock size={18} className="mr-2" />
-                                    <span className="text-sm">Checked Out At: <strong>{asset.checked_out_at ? new Date(asset.checked_out_at).toLocaleString() : 'N/A'}</strong></span>
-                                </div>
-                                {asset.checkout_date && (
-                                    <div className="flex items-center text-gray-600 dark:text-gray-300">
-                                        <Calendar size={18} className="mr-2" />
-                                        <span className="text-sm">Checkout Date: <strong>{asset.checkout_date}</strong></span>
-                                    </div>
-                                )}
-                                {asset.expected_checkin_date && (
-                                    <div className="flex items-center text-gray-600 dark:text-gray-300">
-                                        <Calendar size={18} className="mr-2" />
-                                        <span className="text-sm">Expected Return: <strong>{asset.expected_checkin_date}</strong></span>
-                                    </div>
-                                )}
-                            </div>
-                            {asset.notes && (
-                                <div className="mt-4">
-                                    <div className="flex items-start text-gray-600 dark:text-gray-300">
-                                        <FileText size={18} className="mr-2 mt-1" />
-                                        <div>
-                                            <span className="text-sm font-medium">Notes:</span>
-                                            <p className="text-sm mt-1">{asset.notes}</p>
+                            {/* Checkout Info */}
+                            {asset.checked_out_to && (
+                                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                                    <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">Checkout Information</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="flex items-center text-gray-600 dark:text-gray-300">
+                                            <UserIcon size={18} className="mr-2" />
+                                            <span className="text-sm">Checked Out To: <strong>{asset.checked_out_to}</strong></span>
                                         </div>
+                                        <div className="flex items-center text-gray-600 dark:text-gray-300">
+                                            <Clock size={18} className="mr-2" />
+                                            <span className="text-sm">Checked Out At: <strong>{asset.checked_out_at ? new Date(asset.checked_out_at).toLocaleString() : 'N/A'}</strong></span>
+                                        </div>
+                                        {asset.checkout_date && (
+                                            <div className="flex items-center text-gray-600 dark:text-gray-300">
+                                                <Calendar size={18} className="mr-2" />
+                                                <span className="text-sm">Checkout Date: <strong>{asset.checkout_date}</strong></span>
+                                            </div>
+                                        )}
+                                        {asset.expected_checkin_date && (
+                                            <div className="flex items-center text-gray-600 dark:text-gray-300">
+                                                <Calendar size={18} className="mr-2" />
+                                                <span className="text-sm">Expected Return: <strong>{asset.expected_checkin_date}</strong></span>
+                                            </div>
+                                        )}
                                     </div>
+                                    {asset.notes && (
+                                        <div className="mt-4 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                                            <div className="flex items-start text-gray-600 dark:text-gray-300">
+                                                <FileText size={18} className="mr-2 mt-1" />
+                                                <div>
+                                                    <span className="text-sm font-medium">Notes:</span>
+                                                    <p className="text-sm mt-1">{asset.notes}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
-                    )}
+                    </div>
 
                     {/* Maintenance History */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                         <div className="flex justify-between items-center mb-4">
                             <h4 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
-                                <Wrench size={20} className="text-blue-600" />
+                                <Wrench size={20} className="text-blue-600 dark:text-blue-400" />
                                 Maintenance History
                             </h4>
-                            <button
-                                onClick={() => {
-                                    setSelectedMaintenance(null);
-                                    setShowMaintenanceForm(true);
-                                }}
-                                className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors"
-                            >
-                                <Plus size={16} />
-                                Add Record
-                            </button>
+                            {hasPermission('assets.update') && (
+                                <button
+                                    onClick={() => {
+                                        setSelectedMaintenance(null);
+                                        setShowMaintenanceForm(true);
+                                    }}
+                                    className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors"
+                                >
+                                    <Plus size={16} />
+                                    Add Record
+                                </button>
+                            )}
                         </div>
 
                         {maintenances.length > 0 ? (
@@ -284,8 +301,7 @@ const AssetDetail = () => {
                                                     </span>
                                                     {record.cost && (
                                                         <span className="flex items-center gap-1">
-                                                            <span className="font-mono">$</span>
-                                                            {parseFloat(record.cost).toFixed(2)}
+                                                            {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(record.cost)}
                                                         </span>
                                                     )}
                                                     {record.performed_by && (
@@ -297,20 +313,24 @@ const AssetDetail = () => {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <button
-                                                    onClick={() => handleEditMaintenance(record)}
-                                                    className="p-1.5 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded transition-colors"
-                                                    title="Edit"
-                                                >
-                                                    <Edit size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteMaintenance(record.id)}
-                                                    className="p-1.5 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 rounded transition-colors"
-                                                    title="Delete"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
+                                                {hasPermission('assets.update') && (
+                                                    <button
+                                                        onClick={() => handleEditMaintenance(record)}
+                                                        className="p-1.5 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded transition-colors"
+                                                        title="Edit"
+                                                    >
+                                                        <Edit size={16} />
+                                                    </button>
+                                                )}
+                                                {hasPermission('assets.delete') && (
+                                                    <button
+                                                        onClick={() => handleDeleteMaintenance(record.id)}
+                                                        className="p-1.5 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 rounded transition-colors"
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -320,50 +340,41 @@ const AssetDetail = () => {
                             <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
                                 <Wrench className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                                 <p className="text-gray-500 dark:text-gray-400 text-sm">No maintenance records found.</p>
-                                <button
-                                    onClick={() => {
-                                        setSelectedMaintenance(null);
-                                        setShowMaintenanceForm(true);
-                                    }}
-                                    className="mt-2 text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline"
-                                >
-                                    Add first record
-                                </button>
+                                {hasPermission('assets.update') && (
+                                    <button
+                                        onClick={() => {
+                                            setSelectedMaintenance(null);
+                                            setShowMaintenanceForm(true);
+                                        }}
+                                        className="mt-2 text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline"
+                                    >
+                                        Add first record
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>
 
                     {/* Assigned Licenses */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Assigned Licenses</h4>
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                            <Key size={20} className="text-purple-600 dark:text-purple-400" />
+                            Assigned Licenses
+                        </h4>
                         {licenses.length > 0 ? (
                             <div className="space-y-3">
                                 {licenses.map((license, index) => (
                                     <div key={index} className="border-l-4 border-purple-500 pl-4 py-2 bg-gray-50 dark:bg-gray-700/50 rounded">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
-                                                <div className="flex items-center mb-1">
-                                                    <Key size={16} className="mr-2 text-purple-600 dark:text-purple-400" />
-                                                    <p className="font-medium text-gray-800 dark:text-white">{license.software_name}</p>
-                                                </div>
+                                                <p className="font-medium text-gray-800 dark:text-white">{license.software_name}</p>
                                                 <p className="text-sm text-gray-600 dark:text-gray-400 font-mono">
                                                     Key: {license.product_key}
                                                 </p>
                                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                                     Assigned: {new Date(license.assigned_at).toLocaleString()}
                                                 </p>
-                                                {license.expiration_date && (
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                        Expires: {new Date(license.expiration_date).toLocaleDateString()}
-                                                    </p>
-                                                )}
-                                                {license.notes && (
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 italic">{license.notes}</p>
-                                                )}
                                             </div>
-                                            <span className="text-xs px-2 py-1 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
-                                                Active
-                                            </span>
                                         </div>
                                     </div>
                                 ))}
@@ -375,40 +386,24 @@ const AssetDetail = () => {
 
                     {/* Assigned Accessories */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Assigned Accessories</h4>
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                            <Package size={20} className="text-blue-600 dark:text-blue-400" />
+                            Assigned Accessories
+                        </h4>
                         {accessories.length > 0 ? (
                             <div className="space-y-3">
                                 {accessories.map((accessory, index) => (
                                     <div key={index} className="border-l-4 border-blue-500 pl-4 py-2 bg-gray-50 dark:bg-gray-700/50 rounded">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
-                                                <div className="flex items-center mb-1">
-                                                    <Package size={16} className="mr-2 text-blue-600 dark:text-blue-400" />
-                                                    <p className="font-medium text-gray-800 dark:text-white">{accessory.accessory_name}</p>
-                                                </div>
-                                                {accessory.category && (
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                        Category: {accessory.category}
-                                                    </p>
-                                                )}
-                                                {accessory.model_number && (
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400 font-mono">
-                                                        Model: {accessory.model_number}
-                                                    </p>
-                                                )}
+                                                <p className="font-medium text-gray-800 dark:text-white">{accessory.accessory_name}</p>
                                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                                     Quantity: {accessory.quantity}
                                                 </p>
                                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                                     Assigned: {new Date(accessory.assigned_at).toLocaleString()}
                                                 </p>
-                                                {accessory.notes && (
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 italic">{accessory.notes}</p>
-                                                )}
                                             </div>
-                                            <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                                                Active
-                                            </span>
                                         </div>
                                     </div>
                                 ))}
@@ -420,40 +415,24 @@ const AssetDetail = () => {
 
                     {/* Assigned Components */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Assigned Components</h4>
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                            <Package size={20} className="text-green-600 dark:text-green-400" />
+                            Assigned Components
+                        </h4>
                         {components.length > 0 ? (
                             <div className="space-y-3">
                                 {components.map((component, index) => (
                                     <div key={index} className="border-l-4 border-green-500 pl-4 py-2 bg-gray-50 dark:bg-gray-700/50 rounded">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
-                                                <div className="flex items-center mb-1">
-                                                    <Package size={16} className="mr-2 text-green-600 dark:text-green-400" />
-                                                    <p className="font-medium text-gray-800 dark:text-white">{component.component_name}</p>
-                                                </div>
-                                                {component.category && (
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                        Category: {component.category}
-                                                    </p>
-                                                )}
-                                                {component.model_number && (
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400 font-mono">
-                                                        Model: {component.model_number}
-                                                    </p>
-                                                )}
+                                                <p className="font-medium text-gray-800 dark:text-white">{component.component_name}</p>
                                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                                     Quantity: {component.quantity}
                                                 </p>
                                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                                     Assigned: {new Date(component.assigned_at).toLocaleString()}
                                                 </p>
-                                                {component.notes && (
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 italic">{component.notes}</p>
-                                                )}
                                             </div>
-                                            <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                                                Active
-                                            </span>
                                         </div>
                                     </div>
                                 ))}
@@ -465,17 +444,17 @@ const AssetDetail = () => {
 
                     {/* Assigned Accounts */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Assigned Accounts</h4>
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                            <User size={20} className="text-orange-600 dark:text-orange-400" />
+                            Assigned Accounts
+                        </h4>
                         {accounts.length > 0 ? (
                             <div className="space-y-3">
                                 {accounts.map((account, index) => (
                                     <div key={index} className="border-l-4 border-orange-500 pl-4 py-2 bg-gray-50 dark:bg-gray-700/50 rounded">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
-                                                <div className="flex items-center mb-1">
-                                                    <User size={16} className="mr-2 text-orange-600 dark:text-orange-400" />
-                                                    <p className="font-medium text-gray-800 dark:text-white">{account.account_name}</p>
-                                                </div>
+                                                <p className="font-medium text-gray-800 dark:text-white">{account.account_name}</p>
                                                 <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">
                                                     Type: {account.account_type}
                                                 </p>
@@ -485,13 +464,7 @@ const AssetDetail = () => {
                                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                                     Assigned: {new Date(account.assigned_at).toLocaleString()}
                                                 </p>
-                                                {account.notes && (
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 italic">{account.notes}</p>
-                                                )}
                                             </div>
-                                            <span className="text-xs px-2 py-1 rounded bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
-                                                Active
-                                            </span>
                                         </div>
                                     </div>
                                 ))}
@@ -503,7 +476,10 @@ const AssetDetail = () => {
 
                     {/* Checkout History */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Checkout History</h4>
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                            <Clock size={20} className="text-gray-600 dark:text-gray-400" />
+                            Checkout History
+                        </h4>
                         {history.length > 0 ? (
                             <div className="space-y-3">
                                 {history.map((item, index) => (
@@ -538,6 +514,27 @@ const AssetDetail = () => {
 
                 {/* Sidebar Info */}
                 <div className="space-y-6">
+                    {/* Actions */}
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Actions</h4>
+                        <div className="space-y-3">
+                            {hasPermission('assets.update') && (
+                                <Link
+                                    to={`/assets/edit/${asset.id}`}
+                                    className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center transition-colors"
+                                >
+                                    Edit Asset
+                                </Link>
+                            )}
+                            <button
+                                onClick={() => navigate('/assets')}
+                                className="block w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg transition-colors"
+                            >
+                                Back to List
+                            </button>
+                        </div>
+                    </div>
+
                     {/* QR Code Card */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 text-center">
                         <h3 className="font-semibold text-gray-800 dark:text-white mb-4 flex items-center justify-center gap-2">
@@ -569,24 +566,7 @@ const AssetDetail = () => {
                         </button>
                     </div>
 
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Actions</h4>
-                        <div className="space-y-3">
-                            <Link
-                                to={`/assets/edit/${asset.id}`}
-                                className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center transition-colors"
-                            >
-                                Edit Asset
-                            </Link>
-                            <button
-                                onClick={() => navigate('/assets')}
-                                className="block w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg transition-colors"
-                            >
-                                Back to List
-                            </button>
-                        </div>
-                    </div>
-
+                    {/* Metadata */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                         <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Metadata</h4>
                         <div className="space-y-2 text-sm">

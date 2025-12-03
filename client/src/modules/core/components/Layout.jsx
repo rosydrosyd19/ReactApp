@@ -4,13 +4,21 @@ import { LayoutDashboard, Package, Moon, Sun, Menu, X, MapPin, Users, FileText, 
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
+import { useLayout } from '../context/LayoutContext';
+
 const Layout = ({ children }) => {
     const { theme, toggleTheme } = useTheme();
     const { logout, user, currentModule, accessibleModules, hasPermission } = useAuth();
+    const { title, setTitle } = useLayout();
     const location = useLocation();
     const navigate = useNavigate();
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = React.useState(false);
+
+    // Reset title on location change
+    React.useEffect(() => {
+        setTitle('');
+    }, [location.pathname, setTitle]);
 
     // Navigation Items Configuration
     const navConfigs = {
@@ -151,7 +159,7 @@ const Layout = ({ children }) => {
                 <header className="hidden md:flex items-center justify-between bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 px-6">
                     {/* Left side */}
                     <div className="text-lg font-semibold text-gray-800 dark:text-white capitalize">
-                        {location.pathname === '/' ? 'Dashboard' : location.pathname.split('/').pop().replace(/-/g, ' ')}
+                        {title || (location.pathname === '/' ? 'Dashboard' : location.pathname.split('/').pop().replace(/-/g, ' '))}
                     </div>
 
                     {/* Right side */}

@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Package, Calendar, DollarSign, FileText, User, MapPin, LogIn, QrCode } from 'lucide-react';
+import { ArrowLeft, Edit, Package, Calendar, DollarSign, FileText, User, MapPin, LogIn, QrCode, Layers } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
+import { useAuth } from '../../../core/context/AuthContext';
+
+import { useLayout } from '../../../core/context/LayoutContext';
 
 const AccessoryDetail = () => {
+    const { hasPermission } = useAuth();
+    const { setTitle } = useLayout();
     const { id } = useParams();
     const navigate = useNavigate();
     const [accessory, setAccessory] = useState(null);
@@ -15,6 +20,12 @@ const AccessoryDetail = () => {
         fetchAccessory();
         fetchAssignments();
     }, [id]);
+
+    useEffect(() => {
+        if (accessory) {
+            setTitle(accessory.name);
+        }
+    }, [accessory, setTitle]);
 
     const fetchAccessory = async () => {
         try {
@@ -48,95 +59,98 @@ const AccessoryDetail = () => {
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>;
-    if (!accessory) return <div className="p-8 text-center text-gray-500">Accessory not found</div>;
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+            </div>
+        );
+    }
+
+    if (!accessory) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="text-gray-500 dark:text-gray-400">Accessory not found</div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
                 <button
                     onClick={() => navigate('/accessories')}
-                    className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition-colors"
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
                 >
-                    <ArrowLeft size={20} className="mr-2" />
-                    Back to Accessories
+                    <ArrowLeft size={24} className="text-gray-600 dark:text-gray-300" />
                 </button>
-                <Link
-                    to={`/accessories/edit/${id}`}
-                    className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                    <Edit size={18} className="mr-2" />
-                    Edit Accessory
-                </Link>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{accessory.name}</h2>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Info */}
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                        <div className="flex items-start mb-6">
-                            <div className="mr-6">
-                                {accessory.image_url ? (
-                                    <img
-                                        src={`http://localhost:5000${accessory.image_url}`}
-                                        alt={accessory.name}
-                                        className="w-32 h-32 rounded-xl object-cover shadow-sm"
-                                    />
-                                ) : (
-                                    <div className="w-32 h-32 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                                        <Package size={48} className="text-blue-600 dark:text-blue-400" />
-                                    </div>
-                                )}
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-1">{accessory.name}</h1>
-                                <p className="text-gray-500 dark:text-gray-400">{accessory.category}</p>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-sm text-gray-500 dark:text-gray-400 block mb-1">Manufacturer</label>
-                                    <p className="font-medium text-gray-800 dark:text-white">{accessory.manufacturer || '-'}</p>
+                        <div className="flex items-start gap-6 mb-6">
+                            {accessory.image_url ? (
+                                <img
+                                    src={`http://localhost:5000${accessory.image_url}`}
+                                    alt={accessory.name}
+                                    className="w-24 h-24 object-cover rounded-lg"
+                                />
+                            ) : (
+                                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                    <Package size={48} className="text-blue-600 dark:text-blue-400" />
                                 </div>
-                                <div>
-                                    <label className="text-sm text-gray-500 dark:text-gray-400 block mb-1">Model Number</label>
-                                    <p className="font-medium text-gray-800 dark:text-white font-mono">{accessory.model_number || '-'}</p>
-                                </div>
-                                <div>
-                                    <label className="text-sm text-gray-500 dark:text-gray-400 block mb-1">Total Quantity</label>
-                                    <p className="font-medium text-gray-800 dark:text-white">{accessory.total_quantity}</p>
-                                </div>
-                                <div>
-                                    <label className="text-sm text-gray-500 dark:text-gray-400 block mb-1">Available Quantity</label>
-                                    <span className={`inline-block px-2 py-1 rounded text-sm font-medium ${accessory.available_quantity > 0
+                            )}
+                            <div className="flex-1">
+                                <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">{accessory.name}</h3>
+                                <div className="flex flex-wrap gap-2 mb-2">
+                                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded text-xs font-medium">
+                                        {accessory.category}
+                                    </span>
+                                    <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${accessory.available_quantity > 0
                                         ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                                         : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                                         }`}>
-                                        {accessory.available_quantity}
+                                        {accessory.available_quantity} Available
                                     </span>
                                 </div>
                             </div>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-sm text-gray-500 dark:text-gray-400 block mb-1">Purchase Date</label>
-                                    <div className="flex items-center text-gray-800 dark:text-white">
-                                        <Calendar size={16} className="mr-2 text-gray-400" />
-                                        {accessory.purchase_date ? new Date(accessory.purchase_date).toLocaleDateString() : '-'}
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                                <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">General Information</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="flex items-center text-gray-600 dark:text-gray-300">
+                                        <Layers size={18} className="mr-2" />
+                                        <span className="text-sm">Manufacturer: <strong>{accessory.manufacturer || '-'}</strong></span>
+                                    </div>
+                                    <div className="flex items-center text-gray-600 dark:text-gray-300">
+                                        <FileText size={18} className="mr-2" />
+                                        <span className="text-sm">Model No: <strong className="font-mono">{accessory.model_number || '-'}</strong></span>
+                                    </div>
+                                    <div className="flex items-center text-gray-600 dark:text-gray-300">
+                                        <Calendar size={18} className="mr-2" />
+                                        <span className="text-sm">Purchased: <strong>{accessory.purchase_date ? new Date(accessory.purchase_date).toLocaleDateString() : '-'}</strong></span>
+                                    </div>
+                                    <div className="flex items-center text-gray-600 dark:text-gray-300">
+                                        <DollarSign size={18} className="mr-2" />
+                                        <span className="text-sm">Cost: <strong>{accessory.cost || '-'}</strong></span>
                                     </div>
                                 </div>
-                                <div>
-                                    <label className="text-sm text-gray-500 dark:text-gray-400 block mb-1">Cost</label>
-                                    <div className="flex items-center text-gray-800 dark:text-white">
-                                        <DollarSign size={16} className="mr-2 text-gray-400" />
-                                        {accessory.cost || '-'}
+                                {accessory.notes && (
+                                    <div className="mt-4 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                                        <div className="flex items-start text-gray-600 dark:text-gray-300">
+                                            <FileText size={18} className="mr-2 mt-1" />
+                                            <div>
+                                                <span className="text-sm font-medium">Notes:</span>
+                                                <p className="text-sm mt-1">{accessory.notes}</p>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <label className="text-sm text-gray-500 dark:text-gray-400 block mb-1">Notes</label>
-                                    <p className="text-gray-800 dark:text-white whitespace-pre-wrap">{accessory.notes || '-'}</p>
-                                </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -211,8 +225,29 @@ const AccessoryDetail = () => {
                     </div>
                 </div>
 
-                {/* Sidebar Info (Stats) */}
+                {/* Sidebar Info */}
                 <div className="space-y-6">
+                    {/* Actions */}
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Actions</h4>
+                        <div className="space-y-3">
+                            {hasPermission('accessories.update') && (
+                                <Link
+                                    to={`/accessories/edit/${id}`}
+                                    className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center transition-colors"
+                                >
+                                    Edit Accessory
+                                </Link>
+                            )}
+                            <button
+                                onClick={() => navigate('/accessories')}
+                                className="block w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg transition-colors"
+                            >
+                                Back to List
+                            </button>
+                        </div>
+                    </div>
+
                     {/* QR Code Card */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 text-center">
                         <h3 className="font-semibold text-gray-800 dark:text-white mb-4 flex items-center justify-center gap-2">
@@ -244,6 +279,7 @@ const AccessoryDetail = () => {
                         </button>
                     </div>
 
+                    {/* Quick Stats */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                         <h3 className="font-semibold text-gray-800 dark:text-white mb-4">Quick Stats</h3>
                         <div className="space-y-4">
@@ -260,6 +296,21 @@ const AccessoryDetail = () => {
                                 <span className="font-bold text-blue-700 dark:text-blue-400">
                                     {accessory.total_quantity - accessory.available_quantity}
                                 </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Metadata */}
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Metadata</h4>
+                        <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-400">Accessory ID:</span>
+                                <span className="font-mono text-gray-800 dark:text-white">#{accessory.id}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-400">Created:</span>
+                                <span className="text-gray-800 dark:text-white">{new Date(accessory.created_at).toLocaleDateString()}</span>
                             </div>
                         </div>
                     </div>

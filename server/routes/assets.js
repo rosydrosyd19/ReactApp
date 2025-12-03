@@ -24,12 +24,12 @@ router.get('/:id', (req, res) => {
 
 // Create asset with image upload
 router.post('/', upload.single('image'), (req, res) => {
-    const { name, category, status, serial_number, purchase_date } = req.body;
+    const { name, category, status, serial_number, purchase_date, notes } = req.body;
     const image_url = req.file ? `/uploads/${req.file.filename}` : null;
     const formattedDate = (!purchase_date || purchase_date === 'null' || purchase_date === 'undefined' || purchase_date === '') ? null : purchase_date;
 
-    const sql = 'INSERT INTO asset_items (name, category, status, serial_number, purchase_date, image_url) VALUES (?, ?, ?, ?, ?, ?)';
-    db.query(sql, [name, category, status, serial_number, formattedDate, image_url], (err, result) => {
+    const sql = 'INSERT INTO asset_items (name, category, status, serial_number, purchase_date, notes, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    db.query(sql, [name, category, status, serial_number, formattedDate, notes || null, image_url], (err, result) => {
         if (err) return res.status(500).json(err);
         res.status(201).json({ id: result.insertId, ...req.body, image_url, purchase_date: formattedDate });
     });
@@ -37,20 +37,20 @@ router.post('/', upload.single('image'), (req, res) => {
 
 // Update asset with optional image upload
 router.put('/:id', upload.single('image'), (req, res) => {
-    const { name, category, status, serial_number, purchase_date } = req.body;
+    const { name, category, status, serial_number, purchase_date, notes } = req.body;
     const formattedDate = (!purchase_date || purchase_date === 'null' || purchase_date === 'undefined' || purchase_date === '') ? null : purchase_date;
 
     // If new image uploaded, use it; otherwise keep existing
     if (req.file) {
         const image_url = `/uploads/${req.file.filename}`;
-        const sql = 'UPDATE asset_items SET name = ?, category = ?, status = ?, serial_number = ?, purchase_date = ?, image_url = ? WHERE id = ?';
-        db.query(sql, [name, category, status, serial_number, formattedDate, image_url, req.params.id], (err, result) => {
+        const sql = 'UPDATE asset_items SET name = ?, category = ?, status = ?, serial_number = ?, purchase_date = ?, notes = ?, image_url = ? WHERE id = ?';
+        db.query(sql, [name, category, status, serial_number, formattedDate, notes || null, image_url, req.params.id], (err, result) => {
             if (err) return res.status(500).json(err);
             res.json({ message: 'Asset updated successfully' });
         });
     } else {
-        const sql = 'UPDATE asset_items SET name = ?, category = ?, status = ?, serial_number = ?, purchase_date = ? WHERE id = ?';
-        db.query(sql, [name, category, status, serial_number, formattedDate, req.params.id], (err, result) => {
+        const sql = 'UPDATE asset_items SET name = ?, category = ?, status = ?, serial_number = ?, purchase_date = ?, notes = ? WHERE id = ?';
+        db.query(sql, [name, category, status, serial_number, formattedDate, notes || null, req.params.id], (err, result) => {
             if (err) return res.status(500).json(err);
             res.json({ message: 'Asset updated successfully' });
         });

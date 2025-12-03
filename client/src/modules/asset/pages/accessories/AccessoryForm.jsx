@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, ArrowLeft, Upload, X } from 'lucide-react';
+import { useLayout } from '../../../core/context/LayoutContext';
 
 const AccessoryForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { setTitle } = useLayout();
     const [formData, setFormData] = useState({
         name: '',
         category: '',
@@ -24,8 +26,10 @@ const AccessoryForm = () => {
     useEffect(() => {
         if (id) {
             fetchAccessory();
+        } else {
+            setTitle('Add New Accessory');
         }
-    }, [id]);
+    }, [id, setTitle]);
 
     const fetchAccessory = async () => {
         try {
@@ -39,6 +43,7 @@ const AccessoryForm = () => {
             if (data.image_url) {
                 setExistingImage(`http://localhost:5000${data.image_url}`);
             }
+            setTitle(`Edit ${data.name}`);
         } catch (error) {
             console.error('Error fetching accessory:', error);
         }

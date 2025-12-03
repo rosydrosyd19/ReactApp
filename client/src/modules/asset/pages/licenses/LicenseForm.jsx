@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, ArrowLeft } from 'lucide-react';
+import { useLayout } from '../../../core/context/LayoutContext';
 
 const LicenseForm = () => {
     const navigate = useNavigate();
+    const { setTitle } = useLayout();
     const { id } = useParams();
     const isEditing = !!id;
 
@@ -20,8 +22,10 @@ const LicenseForm = () => {
     useEffect(() => {
         if (isEditing) {
             fetchLicense();
+        } else {
+            setTitle('Add New License');
         }
-    }, [id]);
+    }, [id, isEditing, setTitle]);
 
     const fetchLicense = async () => {
         try {
@@ -31,6 +35,7 @@ const LicenseForm = () => {
             if (data.purchase_date) data.purchase_date = data.purchase_date.split('T')[0];
             if (data.expiration_date) data.expiration_date = data.expiration_date.split('T')[0];
             setFormData(data);
+            setTitle(`Edit ${data.software_name}`);
         } catch (error) {
             console.error('Error fetching license:', error);
         }
