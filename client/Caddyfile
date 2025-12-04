@@ -2,13 +2,18 @@ react.wednesday1991.duckdns.org {
     # PENTING: Ganti /absolute/path/to/your/project dengan path asli di server Anda
     # Contoh: /home/ubuntu/ReactApp/client/dist
     root * /path/to/your/ReactApp/client/dist
-    
-    # Serve static files
-    file_server
-    
-    # SPA routing (redirect unknown paths to index.html)
-    try_files {path} /index.html
 
-    # Reverse proxy API requests to backend
-    reverse_proxy /api/* localhost:5000
+    # 1. Handle API requests (Proxy to Backend)
+    handle /api/* {
+        reverse_proxy localhost:5000
+    }
+
+    # 2. Handle Frontend requests (Static Files + SPA)
+    handle {
+        # Serve static files if they exist
+        file_server
+        
+        # If file doesn't exist, rewrite to index.html (SPA)
+        try_files {path} /index.html
+    }
 }
