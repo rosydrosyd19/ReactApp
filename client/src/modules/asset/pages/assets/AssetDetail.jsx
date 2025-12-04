@@ -9,7 +9,7 @@ import { useAuth } from '../../../core/context/AuthContext';
 import { useLayout } from '../../../core/context/LayoutContext';
 
 const AssetDetail = () => {
-    const { hasPermission } = useAuth();
+    const { hasPermission, user } = useAuth();
     const { setTitle } = useLayout();
     const { id } = useParams();
     const navigate = useNavigate();
@@ -152,7 +152,7 @@ const AssetDetail = () => {
         <div className="space-y-6">
             <div className="flex items-center space-x-4">
                 <button
-                    onClick={() => navigate('/assets')}
+                    onClick={() => user ? navigate('/assets') : navigate(-1)}
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
                 >
                     <ArrowLeft size={24} className="text-gray-600 dark:text-gray-300" />
@@ -237,17 +237,17 @@ const AssetDetail = () => {
                                             </div>
                                         )}
                                     </div>
-                                    {asset.notes && (
-                                        <div className="mt-4 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
-                                            <div className="flex items-start text-gray-600 dark:text-gray-300">
-                                                <FileText size={18} className="mr-2 mt-1" />
-                                                <div>
-                                                    <span className="text-sm font-medium">Notes:</span>
-                                                    <p className="text-sm mt-1">{asset.notes}</p>
-                                                </div>
-                                            </div>
+                                </div>
+                            )}
+                            {asset.notes && (
+                                <div className="mt-4 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                                    <div className="flex items-start text-gray-600 dark:text-gray-300">
+                                        <FileText size={18} className="mr-2 mt-1" />
+                                        <div>
+                                            <span className="text-sm font-medium">Notes:</span>
+                                            <p className="text-sm mt-1">{asset.notes}</p>
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -260,7 +260,7 @@ const AssetDetail = () => {
                                 <Wrench size={20} className="text-blue-600 dark:text-blue-400" />
                                 Maintenance History
                             </h4>
-                            {hasPermission('assets.update') && (
+                            {user && hasPermission('assets.update') && (
                                 <button
                                     onClick={() => {
                                         setSelectedMaintenance(null);
@@ -313,7 +313,7 @@ const AssetDetail = () => {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                {hasPermission('assets.update') && (
+                                                {user && hasPermission('assets.update') && (
                                                     <button
                                                         onClick={() => handleEditMaintenance(record)}
                                                         className="p-1.5 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded transition-colors"
@@ -322,7 +322,7 @@ const AssetDetail = () => {
                                                         <Edit size={16} />
                                                     </button>
                                                 )}
-                                                {hasPermission('assets.delete') && (
+                                                {user && hasPermission('assets.delete') && (
                                                     <button
                                                         onClick={() => handleDeleteMaintenance(record.id)}
                                                         className="p-1.5 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 rounded transition-colors"
@@ -340,7 +340,7 @@ const AssetDetail = () => {
                             <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
                                 <Wrench className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                                 <p className="text-gray-500 dark:text-gray-400 text-sm">No maintenance records found.</p>
-                                {hasPermission('assets.update') && (
+                                {user && hasPermission('assets.update') && (
                                     <button
                                         onClick={() => {
                                             setSelectedMaintenance(null);
@@ -515,25 +515,27 @@ const AssetDetail = () => {
                 {/* Sidebar Info */}
                 <div className="space-y-6">
                     {/* Actions */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Actions</h4>
-                        <div className="space-y-3">
-                            {hasPermission('assets.update') && (
-                                <Link
-                                    to={`/assets/edit/${asset.id}`}
-                                    className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center transition-colors"
+                    {user && (
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                            <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Actions</h4>
+                            <div className="space-y-3">
+                                {hasPermission('assets.update') && (
+                                    <Link
+                                        to={`/assets/edit/${asset.id}`}
+                                        className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center transition-colors"
+                                    >
+                                        Edit Asset
+                                    </Link>
+                                )}
+                                <button
+                                    onClick={() => navigate('/assets')}
+                                    className="block w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg transition-colors"
                                 >
-                                    Edit Asset
-                                </Link>
-                            )}
-                            <button
-                                onClick={() => navigate('/assets')}
-                                className="block w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg transition-colors"
-                            >
-                                Back to List
-                            </button>
+                                    Back to List
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* QR Code Card */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 text-center">
@@ -543,7 +545,7 @@ const AssetDetail = () => {
                         </h3>
                         <div className="bg-white p-4 rounded-xl inline-block mb-4 shadow-sm border border-gray-100">
                             <QRCodeCanvas
-                                value={`http://localhost:3000/assets/detail/${asset.id}`}
+                                value={`${window.location.origin}/scan/assets/${asset.id}`}
                                 size={150}
                                 level={"H"}
                             />

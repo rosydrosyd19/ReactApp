@@ -13,6 +13,11 @@ Aplikasi manajemen aset profesional yang dibangun dengan React.js, Node.js/Expre
 - 🧩 **Components** - Manajemen komponen (RAM, SSD, dll)
 - 🔐 **Accounts** - Manajemen akun/kredensial
 
+### System Administrator (New)
+- 🛡️ **Role Management** - Manajemen role (Super Admin, Staff, dll)
+- 🔒 **Permission Management** - Manajemen hak akses granular
+- 🧩 **Module Management** - Manajemen modul aplikasi
+
 ### Core Features
 - 📊 Dashboard dengan statistik real-time
 - ✏️ CRUD lengkap untuk semua modul
@@ -29,8 +34,14 @@ Aplikasi manajemen aset profesional yang dibangun dengan React.js, Node.js/Expre
 
 Database menggunakan **naming convention dengan prefix** untuk organisasi yang lebih baik:
 
-#### Core Module
+#### Core Module (RBAC & Users)
 - `core_users` - Data pengguna/karyawan
+- `core_roles` - Data role
+- `core_permissions` - Data permission
+- `core_modules` - Data modul
+- `core_user_roles` - Mapping user ke role
+- `core_role_permissions` - Mapping role ke permission
+- `core_role_modules` - Mapping role ke modul
 
 #### Asset Management Module
 - `asset_items` - Data aset utama
@@ -45,33 +56,28 @@ Database menggunakan **naming convention dengan prefix** untuk organisasi yang l
 - `asset_component_assignments` - Assignment komponen
 - `asset_account_assignments` - Assignment akun
 - `asset_location_checkout_history` - Riwayat checkout lokasi
+- `asset_maintenances` - Data maintenance aset
 
 ### Frontend Structure (OPSI A - Modular)
 
 ```
 client/src/
 ├── modules/
-│   ├── core/                    # Core module
+│   ├── core/                    # Core module (Auth, Layout, Dashboard)
 │   │   ├── components/
-│   │   │   └── Layout.jsx
 │   │   ├── context/
-│   │   │   └── ThemeContext.jsx
 │   │   └── pages/
-│   │       └── Dashboard.jsx
 │   └── asset/                   # Asset Management module
 │       ├── components/
-│       │   └── BulkQRPrintModal.jsx
 │       └── pages/
-│           ├── assets/          # Asset pages
-│           ├── locations/       # Location pages
-│           ├── licenses/        # License pages
-│           ├── accessories/     # Accessory pages
-│           ├── components/      # Component pages
-│           ├── accounts/        # Account pages
-│           └── users/           # User pages
+│           ├── assets/
+│           ├── locations/
+│           ├── licenses/
+│           ├── accessories/
+│           ├── components/
+│           ├── accounts/
+│           └── users/
 ├── shared/                      # Shared utilities
-│   ├── components/
-│   └── utils/
 └── App.jsx
 ```
 
@@ -82,19 +88,14 @@ server/
 ├── modules/
 │   ├── asset/
 │   │   ├── routes/
-│   │   │   └── asset.routes.js
 │   │   └── controllers/
-│   │       └── asset.controller.js
 │   └── core/
 │       ├── routes/
 │       └── controllers/
 ├── shared/
 │   ├── config/
-│   │   └── db.js
 │   ├── middleware/
-│   │   └── upload.js
 │   └── utils/
-├── routes/                      # Legacy routes (still active)
 └── server.js
 ```
 
@@ -137,39 +138,33 @@ cd ReactApp
 
 1. Jalankan XAMPP dan aktifkan **MySQL**
 
-2. Buka terminal di folder `server`:
+2. Import database schema:
+   
+   Buka terminal atau command prompt:
+   ```bash
+   mysql -u root < full_schema.sql
+   ```
+   
+   *Catatan: `full_schema.sql` sudah berisi struktur tabel terbaru dan data awal (seed).*
+
+### 3. Menjalankan Backend
+
+1. Masuk ke folder `server`:
    ```bash
    cd server
    ```
 
-3. Install dependencies:
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-4. Jalankan database migration (untuk struktur baru):
-   ```bash
-   node run_migration_rename.js
-   ```
-   
-   **ATAU** jalankan seed script (untuk setup awal):
-   ```bash
-   node seed.js
-   ```
-
-### 3. Menjalankan Backend
-
-1. Pastikan Anda berada di folder `server`:
-   ```bash
-   cd server
-   ```
-
-2. Jalankan server:
+3. Jalankan server:
    ```bash
    npm run dev
    ```
 
-3. Server akan berjalan di `http://localhost:5000`
+4. Server akan berjalan di `http://localhost:5000`
 
 ### 4. Menjalankan Frontend
 
@@ -199,69 +194,16 @@ Buka browser dan kunjungi `http://localhost:5173`
 ### Assets
 - `GET /api/assets` - Get all assets
 - `GET /api/assets/:id` - Get asset by ID
-- `POST /api/assets` - Create new asset (with image upload)
-- `PUT /api/assets/:id` - Update asset (with image upload)
+- `POST /api/assets` - Create new asset
+- `PUT /api/assets/:id` - Update asset
 - `DELETE /api/assets/:id` - Delete asset
-- `POST /api/assets/:id/checkout` - Checkout asset
-- `POST /api/assets/:id/checkin` - Checkin asset
-- `GET /api/assets/:id/history` - Get checkout history
-- `GET /api/assets/:id/licenses` - Get assigned licenses
-- `GET /api/assets/:id/accessories` - Get assigned accessories
-- `GET /api/assets/:id/components` - Get assigned components
-- `GET /api/assets/:id/accounts` - Get assigned accounts
 
-### Locations
-- `GET /api/locations` - Get all locations
-- `GET /api/locations/:id` - Get location by ID
-- `POST /api/locations` - Create new location
-- `PUT /api/locations/:id` - Update location
-- `DELETE /api/locations/:id` - Delete location
-- `POST /api/locations/:id/checkout` - Checkout location
-- `POST /api/locations/:id/checkin` - Checkin location
+### System Admin
+- `GET /api/sysadmin/roles` - Get all roles
+- `GET /api/sysadmin/permissions` - Get all permissions
+- `POST /api/sysadmin/roles` - Create role
 
-### Users
-- `GET /api/users` - Get all users
-- `GET /api/users/:id` - Get user by ID
-- `POST /api/users` - Create new user
-- `PUT /api/users/:id` - Update user
-- `DELETE /api/users/:id` - Delete user
-
-### Licenses
-- `GET /api/licenses` - Get all licenses
-- `GET /api/licenses/:id` - Get license by ID
-- `POST /api/licenses` - Create new license
-- `PUT /api/licenses/:id` - Update license
-- `DELETE /api/licenses/:id` - Delete license
-- `POST /api/licenses/:id/assign` - Assign license
-- `POST /api/licenses/:id/return` - Return license
-
-### Accessories
-- `GET /api/accessories` - Get all accessories
-- `GET /api/accessories/:id` - Get accessory by ID
-- `POST /api/accessories` - Create new accessory (with image upload)
-- `PUT /api/accessories/:id` - Update accessory (with image upload)
-- `DELETE /api/accessories/:id` - Delete accessory
-- `POST /api/accessories/:id/checkout` - Checkout accessory
-- `POST /api/accessories/:id/checkin` - Checkin accessory
-
-### Components
-- `GET /api/components` - Get all components
-- `GET /api/components/:id` - Get component by ID
-- `POST /api/components` - Create new component
-- `PUT /api/components/:id` - Update component
-- `DELETE /api/components/:id` - Delete component
-- `POST /api/components/:id/assign` - Assign component
-
-### Accounts
-- `GET /api/accounts` - Get all accounts
-- `GET /api/accounts/:id` - Get account by ID
-- `POST /api/accounts` - Create new account
-- `PUT /api/accounts/:id` - Update account
-- `DELETE /api/accounts/:id` - Delete account
-- `POST /api/accounts/:id/assign` - Assign account
-
-### Dashboard
-- `GET /api/dashboard` - Get dashboard statistics
+*(Dan endpoint lainnya untuk setiap modul)*
 
 ## ⚙️ Konfigurasi Database
 
@@ -272,56 +214,6 @@ Default konfigurasi database (di `server/shared/config/db.js`):
 - **Database**: `asset_management_db`
 
 Jika konfigurasi MySQL Anda berbeda, edit file `server/shared/config/db.js`.
-
-## 🔄 Database Migration
-
-Jika Anda sudah memiliki database lama dan ingin migrate ke struktur baru:
-
-```bash
-cd server
-node run_migration_rename.js
-```
-
-Untuk rollback jika terjadi masalah:
-
-```bash
-mysql -u root asset_management_db < rollback_rename_tables.sql
-```
-
-## 📝 Dokumentasi Tambahan
-
-- **RESTRUCTURING_SUMMARY.md** - Ringkasan restructuring yang telah dilakukan
-- **implementation_plan.md** - Rencana implementasi detail
-- **walkthrough.md** - Walkthrough lengkap proses restructuring
-
-## 🐛 Troubleshooting
-
-### Port sudah digunakan
-Jika port 5000 atau 5173 sudah digunakan:
-- Matikan aplikasi yang menggunakan port tersebut
-- Atau ubah port di `server/server.js` (backend)
-- Vite akan otomatis mencari port lain untuk frontend
-
-### MySQL tidak terkoneksi
-- Pastikan XAMPP MySQL sudah berjalan
-- Periksa konfigurasi di `server/shared/config/db.js`
-- Pastikan database `asset_management_db` sudah dibuat
-- Cek username dan password MySQL
-
-### Dark mode tidak berfungsi
-- Refresh halaman browser
-- Clear cache browser
-- Periksa localStorage browser
-
-### Import errors setelah restructuring
-- Pastikan semua dependencies sudah terinstall: `npm install`
-- Clear node_modules dan reinstall: `rm -rf node_modules && npm install`
-- Restart dev server
-
-### Database table not found
-- Pastikan migration sudah dijalankan: `node run_migration_rename.js`
-- Atau jalankan seed script: `node seed.js`
-- Cek apakah tabel menggunakan prefix baru (`asset_*`, `core_*`)
 
 ## 🚀 Roadmap
 
@@ -336,11 +228,11 @@ Jika port 5000 atau 5173 sudah digunakan:
 - ✅ QR Code Generation & Bulk Printing
 - ✅ Database Restructuring (Naming Convention)
 - ✅ Code Restructuring (Modular Architecture)
+- ✅ Role-Based Access Control (RBAC)
+- ✅ System Admin Module
 
 ### Upcoming 🔜
 - 🔜 **HR Module** - Employee management, attendance, leave, payroll
-- 🔜 Authentication & Authorization
-- 🔜 Role-based Access Control (RBAC)
 - 🔜 Advanced Reporting & Analytics
 - 🔜 Email Notifications
 - 🔜 Audit Logs
@@ -361,10 +253,12 @@ For questions or support, please open an issue on GitHub.
 
 ---
 
-**Last Updated**: November 28, 2025
-**Version**: 2.0.0 (Restructured)
+**Last Updated**: December 4, 2025
+**Version**: 2.1.0 (RBAC Enabled)
 **Status**: ✅ Production Ready
 
 
----do it ----
-Munculkan note yang ada di menu Assets, Licenses, Accessories, Components dan accounts di halaman detail masing masing
+
+---do it ---
+
+Tambahkan tombol sesuai permission user untuk user yang scan qrcode dan sudah melakukan login bila belum melakukan login tampilkan tombol login.

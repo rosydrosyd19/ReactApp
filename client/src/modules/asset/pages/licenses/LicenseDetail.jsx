@@ -7,7 +7,7 @@ import { useAuth } from '../../../core/context/AuthContext';
 import { useLayout } from '../../../core/context/LayoutContext';
 
 const LicenseDetail = () => {
-    const { hasPermission } = useAuth();
+    const { hasPermission, user } = useAuth();
     const { setTitle } = useLayout();
     const { id } = useParams();
     const navigate = useNavigate();
@@ -92,7 +92,7 @@ const LicenseDetail = () => {
         <div className="space-y-6">
             <div className="flex items-center space-x-4">
                 <button
-                    onClick={() => navigate('/licenses')}
+                    onClick={() => user ? navigate('/licenses') : navigate(-1)}
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
                 >
                     <ArrowLeft size={24} className="text-gray-600 dark:text-gray-300" />
@@ -179,14 +179,16 @@ const LicenseDetail = () => {
                                                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{assignment.notes}</p>
                                             )}
                                         </div>
-                                        <button
-                                            onClick={() => handleCheckin(assignment.id)}
-                                            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium text-sm"
-                                            title="Return License Seat"
-                                        >
-                                            <LogIn size={16} />
-                                            <span className="hidden sm:inline">Check In</span>
-                                        </button>
+                                        {user && (
+                                            <button
+                                                onClick={() => handleCheckin(assignment.id)}
+                                                className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium text-sm"
+                                                title="Return License Seat"
+                                            >
+                                                <LogIn size={16} />
+                                                <span className="hidden sm:inline">Check In</span>
+                                            </button>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -262,25 +264,27 @@ const LicenseDetail = () => {
                 {/* Sidebar Info */}
                 <div className="space-y-6">
                     {/* Actions */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Actions</h4>
-                        <div className="space-y-3">
-                            {hasPermission('licenses.update') && (
-                                <Link
-                                    to={`/licenses/edit/${license.id}`}
-                                    className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center transition-colors"
+                    {user && (
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                            <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Actions</h4>
+                            <div className="space-y-3">
+                                {hasPermission('licenses.update') && (
+                                    <Link
+                                        to={`/licenses/edit/${license.id}`}
+                                        className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center transition-colors"
+                                    >
+                                        Edit License
+                                    </Link>
+                                )}
+                                <button
+                                    onClick={() => navigate('/licenses')}
+                                    className="block w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg transition-colors"
                                 >
-                                    Edit License
-                                </Link>
-                            )}
-                            <button
-                                onClick={() => navigate('/licenses')}
-                                className="block w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg transition-colors"
-                            >
-                                Back to List
-                            </button>
+                                    Back to List
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Metadata */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">

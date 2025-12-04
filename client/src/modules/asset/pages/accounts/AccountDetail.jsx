@@ -7,7 +7,7 @@ import { useAuth } from '../../../core/context/AuthContext';
 import { useLayout } from '../../../core/context/LayoutContext';
 
 const AccountDetail = () => {
-    const { hasPermission } = useAuth();
+    const { hasPermission, user } = useAuth();
     const { setTitle } = useLayout();
     const { id } = useParams();
     const navigate = useNavigate();
@@ -69,7 +69,7 @@ const AccountDetail = () => {
         <div className="space-y-6">
             <div className="flex items-center space-x-4">
                 <button
-                    onClick={() => navigate('/accounts')}
+                    onClick={() => user ? navigate('/accounts') : navigate(-1)}
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
                 >
                     <ArrowLeft size={24} className="text-gray-600 dark:text-gray-300" />
@@ -179,13 +179,15 @@ const AccountDetail = () => {
                                             </td>
                                             <td className="p-4 text-gray-600 dark:text-gray-300">{assignment.notes || '-'}</td>
                                             <td className="p-4">
-                                                <button
-                                                    onClick={() => handleCheckin(assignment.id)}
-                                                    className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors"
-                                                    title="Check In"
-                                                >
-                                                    <LogIn size={18} />
-                                                </button>
+                                                {user && (
+                                                    <button
+                                                        onClick={() => handleCheckin(assignment.id)}
+                                                        className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors"
+                                                        title="Check In"
+                                                    >
+                                                        <LogIn size={18} />
+                                                    </button>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}
@@ -205,25 +207,27 @@ const AccountDetail = () => {
                 {/* Sidebar Info */}
                 <div className="space-y-6">
                     {/* Actions */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Actions</h4>
-                        <div className="space-y-3">
-                            {hasPermission('accounts.update') && (
-                                <Link
-                                    to={`/accounts/edit/${id}`}
-                                    className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center transition-colors"
+                    {user && (
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                            <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Actions</h4>
+                            <div className="space-y-3">
+                                {hasPermission('accounts.update') && (
+                                    <Link
+                                        to={`/accounts/edit/${id}`}
+                                        className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center transition-colors"
+                                    >
+                                        Edit Account
+                                    </Link>
+                                )}
+                                <button
+                                    onClick={() => navigate('/accounts')}
+                                    className="block w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg transition-colors"
                                 >
-                                    Edit Account
-                                </Link>
-                            )}
-                            <button
-                                onClick={() => navigate('/accounts')}
-                                className="block w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg transition-colors"
-                            >
-                                Back to List
-                            </button>
+                                    Back to List
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Quick Stats */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">

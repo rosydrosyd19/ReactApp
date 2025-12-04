@@ -53,7 +53,7 @@ cd ReactApp
 
 ## Langkah 2: Setup Database
 
-Aplikasi ini membutuhkan database MySQL dengan struktur tabel tertentu. File `full_schema.sql` sudah disiapkan dan berisi semua tabel yang diperlukan.
+Aplikasi ini membutuhkan database MySQL dengan struktur tabel tertentu. File `full_schema.sql` sudah disiapkan dan berisi semua tabel yang diperlukan (termasuk RBAC dan data awal).
 
 ### Import ke MySQL
 Masuk ke MySQL dan import file `full_schema.sql`. Ganti `root` dengan user database Anda jika berbeda.
@@ -83,11 +83,11 @@ npm install
 ```
 
 ### 2. Konfigurasi Database
-**PENTING**: Aplikasi saat ini menggunakan konfigurasi database hardcoded di `server/db.js`. Anda perlu menyesuaikannya dengan kredensial MySQL di server Anda.
+**PENTING**: Aplikasi saat ini menggunakan konfigurasi database hardcoded di `server/shared/config/db.js`. Anda perlu menyesuaikannya dengan kredensial MySQL di server Anda.
 
-Buka file `server/db.js`:
+Buka file `server/shared/config/db.js`:
 ```bash
-nano db.js
+nano shared/config/db.js
 ```
 
 Ubah bagian berikut sesuai user dan password MySQL Anda:
@@ -118,7 +118,7 @@ DB_NAME=asset_management_db
 ### 4. Jalankan Server
 Untuk pengujian:
 ```bash
-npm start
+npm run dev
 ```
 Server akan berjalan di port 5000. Tekan `Ctrl+C` untuk berhenti.
 

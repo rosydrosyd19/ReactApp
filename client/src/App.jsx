@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './modules/core/context/ThemeContext';
 import { AuthProvider } from './modules/core/context/AuthContext';
 import Layout from './modules/core/components/Layout';
+import PublicLayout from './modules/core/components/PublicLayout';
 import ProtectedRoute from './modules/core/components/ProtectedRoute';
 import PermissionRoute from './modules/core/components/PermissionRoute';
 import Login from './modules/core/pages/Login';
@@ -47,6 +48,44 @@ function App() {
           <Router>
             <Routes>
               <Route path="/login" element={<Login />} />
+
+              {/* Public Scan Routes */}
+              <Route path="/scan/assets/:id" element={
+                <PublicLayout>
+                  <AssetDetail />
+                </PublicLayout>
+              } />
+              <Route path="/scan/licenses/:id" element={
+                <PublicLayout>
+                  <LicenseDetail />
+                </PublicLayout>
+              } />
+              <Route path="/scan/accessories/:id" element={
+                <PublicLayout>
+                  <AccessoryDetail />
+                </PublicLayout>
+              } />
+              <Route path="/scan/components/:id" element={
+                <PublicLayout>
+                  <ComponentDetail />
+                </PublicLayout>
+              } />
+              <Route path="/scan/accounts/:id" element={
+                <PublicLayout>
+                  <AccountDetail />
+                </PublicLayout>
+              } />
+              <Route path="/scan/locations/:id" element={
+                <PublicLayout>
+                  <LocationDetail />
+                </PublicLayout>
+              } />
+              <Route path="/scan/users/:id" element={
+                <PublicLayout>
+                  <UserDetail />
+                </PublicLayout>
+              } />
+
               <Route path="/modules" element={
                 <ProtectedRoute>
                   <ModuleSelection />

@@ -8,7 +8,7 @@ import { useAuth } from '../../../core/context/AuthContext';
 import { useLayout } from '../../../core/context/LayoutContext';
 
 const AccessoryDetail = () => {
-    const { hasPermission } = useAuth();
+    const { hasPermission, user } = useAuth();
     const { setTitle } = useLayout();
     const { id } = useParams();
     const navigate = useNavigate();
@@ -79,7 +79,7 @@ const AccessoryDetail = () => {
         <div className="space-y-6">
             <div className="flex items-center space-x-4">
                 <button
-                    onClick={() => navigate('/accessories')}
+                    onClick={() => user ? navigate('/accessories') : navigate(-1)}
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
                 >
                     <ArrowLeft size={24} className="text-gray-600 dark:text-gray-300" />
@@ -169,6 +169,7 @@ const AccessoryDetail = () => {
                                         <th className="p-4">Quantity</th>
                                         <th className="p-4">Assigned Date</th>
                                         <th className="p-4">Returned Date</th>
+                                        <th className="p-4">Notes</th>
                                         <th className="p-4">Action</th>
                                     </tr>
                                 </thead>
@@ -199,8 +200,9 @@ const AccessoryDetail = () => {
                                                     <span className="text-orange-500">Active</span>
                                                 )}
                                             </td>
+                                            <td className="p-4 text-gray-600 dark:text-gray-300">{assignment.notes || '-'}</td>
                                             <td className="p-4">
-                                                {!assignment.returned_at && (
+                                                {!assignment.returned_at && user && hasPermission('accessories', 'checkin') && (
                                                     <button
                                                         onClick={() => handleCheckin(assignment.id)}
                                                         className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors"
@@ -214,7 +216,7 @@ const AccessoryDetail = () => {
                                     ))}
                                     {assignments.length === 0 && (
                                         <tr>
-                                            <td colSpan="6" className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                            <td colSpan="7" className="p-8 text-center text-gray-500 dark:text-gray-400">
                                                 No assignment history found.
                                             </td>
                                         </tr>
@@ -228,25 +230,27 @@ const AccessoryDetail = () => {
                 {/* Sidebar Info */}
                 <div className="space-y-6">
                     {/* Actions */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Actions</h4>
-                        <div className="space-y-3">
-                            {hasPermission('accessories.update') && (
-                                <Link
-                                    to={`/accessories/edit/${id}`}
-                                    className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center transition-colors"
+                    {user && (
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                            <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Actions</h4>
+                            <div className="space-y-3">
+                                {hasPermission('accessories.update') && (
+                                    <Link
+                                        to={`/accessories/edit/${id}`}
+                                        className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center transition-colors"
+                                    >
+                                        Edit Accessory
+                                    </Link>
+                                )}
+                                <button
+                                    onClick={() => navigate('/accessories')}
+                                    className="block w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg transition-colors"
                                 >
-                                    Edit Accessory
-                                </Link>
-                            )}
-                            <button
-                                onClick={() => navigate('/accessories')}
-                                className="block w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg transition-colors"
-                            >
-                                Back to List
-                            </button>
+                                    Back to List
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* QR Code Card */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 text-center">
@@ -256,7 +260,7 @@ const AccessoryDetail = () => {
                         </h3>
                         <div className="bg-white p-4 rounded-xl inline-block mb-4 shadow-sm border border-gray-100">
                             <QRCodeCanvas
-                                value={`http://localhost:3000/accessories/detail/${accessory.id}`}
+                                value={`${window.location.origin}/scan/accessories/${accessory.id}`}
                                 size={150}
                                 level={"H"}
                             />
