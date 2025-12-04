@@ -1,6 +1,7 @@
-:80 {
-    # Set root to the build directory
-    root * ./dist
+react.wednesday1991.duckdns.org {
+    # PENTING: Ganti /absolute/path/to/your/project dengan path asli di server Anda
+    # Contoh: /home/ubuntu/ReactApp/client/dist
+    root * /path/to/your/ReactApp/client/dist
     
     # Serve static files
     file_server
