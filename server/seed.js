@@ -5,8 +5,8 @@ dotenv.config();
 
 const db = mysql.createConnection({
     host: 'localhost',
-    user: 'root',
-    password: '', // Default XAMPP password
+    user: 'rosyd',
+    password: 'rosyd1298',
 });
 
 db.connect((err) => {
