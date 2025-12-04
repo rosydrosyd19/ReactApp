@@ -1,0 +1,13 @@
+:80 {
+    # Set root to the build directory
+    root * ./dist
+    
+    # Serve static files
+    file_server
+    
+    # SPA routing (redirect unknown paths to index.html)
+    try_files {path} /index.html
+
+    # Reverse proxy API requests to backend
+    reverse_proxy /api/* localhost:5000
+}
